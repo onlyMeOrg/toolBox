@@ -61,7 +61,10 @@ jobs:
 
       - name: Compilar o rustc e a biblioteca padrão
         working-directory: rust-playground-inbrowser
-        run: sh scripts/build-rustc.sh
+        # Without the variables that say "CI": with them, Rust's bootstrap assumes it runs in Rust's own
+        # CI, takes one of the patch commits for an upstream one and looks for a prebuilt LLVM that
+        # does not exist (404). As on a developer's machine, it finds the pinned upstream commit.
+        run: env -u GITHUB_ACTIONS -u CI sh scripts/build-rustc.sh
 
       - name: Compilar o linker
         working-directory: rust-playground-inbrowser
