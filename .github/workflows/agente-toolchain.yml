@@ -1,0 +1,107 @@
+# Builds the Rust toolchain that outropedro.com.br/agente/ runs in the browser (rustc.wasm, wild.wasm
+# and the standard library) from pinned sources and publishes it as a release. Run by hand; it takes
+# about 40 minutes on 4 cores and about 14 GB of disk.
+#
+# The build is the rust-playground-inbrowser project's (Apache-2.0), at a pinned commit: its scripts
+# fetch rust-lang/rust and the wild linker at pinned commits, apply its patches and build. To update
+# the toolchain, change the two commits below.
+#
+# After it runs: its summary prints the block to copy into `agentToolchain` in the site's
+# src/data/site.json (the site's build downloads the release and checks each file's sha256).
+name: Toolchain do agente
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  REFERENCE_REPO: https://github.com/ryancbuckley/rust-playground-inbrowser
+  REFERENCE_COMMIT: f5298630dda0f2dc2b44f6ae1b54add7a77d8316
+  # Only its package.json and LICENSE are read, by the license notices.
+  KERNEL_REPO: https://github.com/ryancbuckley/browser-kernel
+  KERNEL_COMMIT: a2cdcb3f69bb735ec8bb0269cd1299d85460c29e
+
+jobs:
+  toolchain:
+    name: Compilar e publicar
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: site
+
+      - name: Liberar disco
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup
+          df -h /
+
+      - name: Buscar as fontes fixadas
+        run: |
+          fetch() { git init -q "$1" && git -C "$1" fetch -q --depth 1 "$2" "$3" && git -C "$1" checkout -q FETCH_HEAD; }
+          fetch rust-playground-inbrowser "$REFERENCE_REPO" "$REFERENCE_COMMIT"
+          fetch browser-kernel "$KERNEL_REPO" "$KERNEL_COMMIT"
+          nightly=$(sed -n 's/^RUST_NIGHTLY=\([^ ]*\).*/\1/p' rust-playground-inbrowser/scripts/setup.sh)
+          echo "RUST_NIGHTLY=$nightly" >> "$GITHUB_ENV"
+          echo "TAG=toolchain-${nightly#nightly-}-${REFERENCE_COMMIT:0:7}" >> "$GITHUB_ENV"
+
+      - name: A release ainda não existe
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "::error::a release $TAG já existe"; exit 1
+          fi
+
+      - name: Preparar (fontes do Rust e do wild, patches, ferramentas)
+        working-directory: rust-playground-inbrowser
+        run: sh scripts/setup.sh
+
+      - name: Compilar o rustc e a biblioteca padrão
+        working-directory: rust-playground-inbrowser
+        run: sh scripts/build-rustc.sh
+
+      - name: Compilar o linker
+        working-directory: rust-playground-inbrowser
+        run: sh scripts/build-wild.sh
+
+      - name: Empacotar
+        working-directory: rust-playground-inbrowser
+        run: |
+          mkdir -p ../out
+          # Without their name sections, gzipped (no timestamp in the gzip header).
+          for m in vendor/rust/build/wasm32-wasip1-threads/stage2/bin/rustc.wasm \
+                   vendor/wild/target/wasm32-wasip1-threads/release/wild.wasm; do
+            name=$(basename "$m")
+            tools/wasm-tools strip --all "$m" -o "../out/$name.tmp"
+            gzip -9 -n -c "../out/$name.tmp" > "../out/$name.gz"
+            rm "../out/$name.tmp"
+          done
+          python3 scripts/bundle.py vendor/rust/dist ../out/sysroot.bundle \
+            --exclude 'bin/*' --exclude 'etc/*' --exclude 'share/*' \
+            --exclude 'lib/rustlib/[!w]*' --exclude 'lib/rustlib/*/bin/*'
+          python3 ../site/agente-toolchain/toolchain-licenses.py . ../out/licenses.html
+          cd ../out && sha256sum rustc.wasm.gz wild.wasm.gz sysroot.bundle licenses.html > SHA256SUMS && ls -la && cat SHA256SUMS
+
+      - name: Publicar a release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$TAG" out/rustc.wasm.gz out/wild.wasm.gz out/sysroot.bundle out/licenses.html out/SHA256SUMS \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Toolchain do agente ($RUST_NIGHTLY)" \
+            --notes "rustc (Cranelift), a biblioteca padrão e o linker wild compilados para WebAssembly, para /agente/. Construídos das fontes fixadas por $REFERENCE_REPO no commit $REFERENCE_COMMIT. Os avisos de licença estão em licenses.html."
+          {
+            echo "Release \`$TAG\` publicada. Em \`src/data/site.json\`:"
+            echo '```json'
+            echo '"agentToolchain": {'
+            echo "	\"repo\": \"$GITHUB_REPOSITORY\","
+            echo "	\"tag\": \"$TAG\","
+            echo "	\"rust\": \"$RUST_NIGHTLY\","
+            echo '	"sha256": {'
+            awk 'NR<=4 { printf "\t\t\"%s\": \"%s\"%s\n", $2, $1, (NR<4 ? "," : "") }' out/SHA256SUMS
+            echo '	}'
+            echo '}'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
