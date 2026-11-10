@@ -35,8 +35,12 @@ Em Actions, `Toolchain do agente`, `Run workflow`. Leva cerca de 40 minutos em 4
 
 Para atualizar o compilador, troque os commits em `env` no workflow.
 
-O build não é reproduzível byte a byte entre máquinas: duas execuções dão arquivos do mesmo tamanho,
-com poucos kB de diferença, e hashes diferentes. Por isso o site fixa o hash da release que usa.
+O compilador e o linker saem idênticos byte a byte em duas máquinas Linux x86_64 (conferido uma vez:
+um build local e o do GitHub deram o mesmo sha256). A biblioteca padrão empacotada difere em algumas
+centenas de bytes entre builds. Por isso o site fixa o hash de cada arquivo da release que usa.
+
+Dentro do GitHub Actions, o passo do `rustc` roda sem as variáveis `GITHUB_ACTIONS` e `CI`: com elas o
+bootstrap do Rust age como no CI do próprio Rust e procura um LLVM pronto que não existe.
 
 ## Licenças
 
