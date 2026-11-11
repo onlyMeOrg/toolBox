@@ -6,6 +6,7 @@
 <script type="module">
 import { Wllama } from '/wllama/index.js';
 import { TASKS, TILE_HEAD } from './tasks.mjs';
+import { SYS, TILE_NOTE, chatml, repairUser, whyText } from './prompt.mjs';
 const P = new URLSearchParams(location.search);
 const MODEL = P.get('model'), ONLY = P.get('only');
 const [SHARD, SHARDS] = (P.get('shard') ?? '0/1').split('/').map(Number);
@@ -55,8 +56,7 @@ const applyFixes = (source, diags, kinds) => { const enc = new TextEncoder(); co
   if (!kept.length) return null; const parts = []; let at = 0; for (const f of kept) { parts.push(bytes.subarray(at, f.start), enc.encode(f.replacement)); at = f.end; } parts.push(bytes.subarray(at));
   const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0)); let o = 0; for (const p of parts) { out.set(p, o); o += p.length; } const fixed = new TextDecoder().decode(out); return fixed === source ? null : fixed; };
 const describe = (source, diags) => { const lines = source.split('\n'); return diags.filter((d) => d.level === 'error').slice(0, 3).map((d) => `error${d.code ? `[${d.code}]` : ''}: ${d.message}` + (d.line ? `\n  at line ${d.line}: ${(lines[d.line - 1] ?? '').trim()}` : '')).join('\n'); };
-const SYS = 'You are an expert Rust programmer. You write one complete Rust library file (edition 2024, standard library only, no external crates, no fn main, no tests).';
-const TILE_NOTE = '\nIt is a "tile" program: the host calls init once and frame every frame; frame returns the RGBA pixels. Complete the file that is started for you: write the body of the loop (set pixels[i], pixels[i + 1], pixels[i + 2] and pixels[i + 3]), close the loops, and end frame with `pixels.as_ptr()`.';
+// SYS, TILE_NOTE and the prompts come from prompt.mjs.
 // Solved examples of similar (not the same) tasks, shown before the request when ?few=1.
 const TILE_EX = [
   ['Write a tile program that draws vertical stripes 4 pixels wide, alternating blue and yellow. Alpha is 255.',
@@ -104,7 +104,6 @@ const FN_EX = [
 ];
 const FEW = P.get('few') === '1';
 const shots = (task) => !FEW ? '' : (task.kind === 'tile' ? TILE_EX : FN_EX).map(([q, a], n) => `Example ${n + 1}. Request: ${q}${task.kind === 'tile' ? TILE_NOTE : ''}\nAnswer:\n\`\`\`rust\n${task.kind === 'tile' ? TILE_HEAD : ''}${a}\`\`\`\n\n`).join('') + 'Now the real request. ';
-const chatml = (user, prefill) => `<|im_start|>system\n${SYS}<|im_end|>\n<|im_start|>user\n${user}<|im_end|>\n<|im_start|>assistant\n\`\`\`rust\n${prefill}`;
 const clean = (code) => code.replace(/\n(?:\/\/[^\n]*\n)*\s*$/, '\n').trimEnd() + '\n';
 let calls = 0;
 async function generate(user, prefill, temperature) {
@@ -141,8 +140,8 @@ for (const [n, task] of TASKS.entries()) {
     rec.last = v.stage;
     if (v.stage === 'pass') { rec.pass = true; break; }
     if (rec.modelCalls >= MODEL_CALLS) break;
-    const why = v.stage === 'compile' ? `It does not compile:\n${describe(code, v.diags)}` : v.stage === 'test' ? `It compiles, but it gives wrong results:\n${v.out}` : v.stage === 'run' ? `It compiles, but it fails when it runs: ${v.out}` : 'It compiles and runs, but the picture is not what was asked.';
-    const user = `${ask}\n\nThis attempt is wrong:\n\`\`\`rust\n${code}\`\`\`\n${why}\n\nWrite the whole corrected file.`;
+    const why = whyText(v.stage, v.stage === 'compile' ? describe(code, v.diags) : v.out);
+    const user = repairUser(ask, code, why);
     g = await generate(user, head, 0.5); rec.modelCalls++; code = g.code; rec.steps.push({ what: 'repair', why: v.stage, ...g });
   }
   rec.code = code;
