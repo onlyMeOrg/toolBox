@@ -5,7 +5,8 @@
   "scripts": {
     "site": "node fetch-site.mjs",
     "verify": "node verify.mjs",
-    "measure": "node run.mjs"
+    "measure": "node run.mjs",
+    "data": "node data/gen.mjs --per 3"
   },
   "dependencies": {
     "@wllama/wllama": "3.13.0"

@@ -1,0 +1,73 @@
+{
+	"toolchain": "toolchain-2026-10-19-f529863",
+	"seeds": 54,
+	"seedsFailing": [],
+	"pairs": 526,
+	"byStage": {
+		"compile": 423,
+		"test": 103
+	},
+	"byAutofix": {
+		"maybe": 134,
+		"sure": 124,
+		"-": 103,
+		"none": 90,
+		"other": 75
+	},
+	"byOperator": {
+		"drop_semicolon": 68,
+		"misspell": 63,
+		"wrong_method": 59,
+		"swap_type": 58,
+		"drop_mut": 42,
+		"swap_operator": 39,
+		"flip_comparison": 27,
+		"drop_cast": 18,
+		"drop_self": 17,
+		"change_constant": 16,
+		"int_for_float": 11,
+		"drop_use": 10,
+		"drop_brace": 10,
+		"range_inclusive": 8,
+		"swap_branches": 8,
+		"drop_some": 8,
+		"str_for_string": 7,
+		"range_from_one": 7,
+		"drop_to_string": 6,
+		"drop_mut_ref": 6,
+		"drop_unwrap": 6,
+		"drop_lock": 6,
+		"drop_question": 5,
+		"drop_ref_pattern": 4,
+		"drop_copied": 4,
+		"drop_return_type": 4,
+		"old_no_mangle": 4,
+		"add_some": 2,
+		"drop_deref": 1,
+		"drop_impl_generic": 1,
+		"immutable_param": 1
+	},
+	"byErrorCode": {
+		"E0308": 110,
+		"E0425": 86,
+		"E0599": 60,
+		"E0277": 47,
+		"E0596": 24,
+		"E0384": 22,
+		"E0614": 6,
+		"E0433": 6,
+		"E0594": 4,
+		"E0053": 4,
+		"E0608": 4,
+		"E0061": 3,
+		"E0004": 3,
+		"E0106": 2,
+		"E0369": 1,
+		"E0405": 1
+	},
+	"dropped": {
+		"still passes": 81,
+		"error outside the file": 126,
+		"tile head": 218
+	}
+}

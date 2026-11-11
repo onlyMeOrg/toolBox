@@ -62,3 +62,33 @@ O worker de build e o núcleo WASI são os do site, baixados em produção; a ca
 [rust-playground-inbrowser](https://github.com/ryancbuckley/rust-playground-inbrowser) (Apache-2.0), e o
 compilador é o construído pela receita em [`../agente-toolchain/`](../agente-toolchain/). A
 inferência é o [wllama](https://github.com/ngxson/wllama) (MIT).
+
+## Dados de treino por mutação (`data/`)
+
+`npm run data` gera pares de erro e correção sem modelo nenhum: parte de programas corretos
+(`data/seeds.mjs`, 54 sementes: 44 de função com teste e 10 de tile), quebra cada um num lugar por vez
+(`data/mutate.mjs`, 33 operadores: um `mut` que falta, um tipo trocado, um método que não existe em
+Rust, uma comparação invertida…) e passa cada mutante pelo compilador de verdade, o mesmo da página.
+
+- Não compila: vira um par com o arquivo quebrado, os erros do compilador (no mesmo texto que o laço
+  mostra ao modelo) e o arquivo correto.
+- Compila e falha no teste da semente: vira um par de "resultado errado".
+- Continua passando, ou o erro cai no teste escondido (assinatura trocada): descartado.
+
+Cada par diz se as correções do próprio compilador já devolvem o arquivo original (`autofix`:
+`sure`, `maybe`, `other`, `none`); o laço aplica essas sem o modelo, então o treino deve pesar mais os
+outros.
+
+Resultado de 2026-11-11 (`data/out/pairs.jsonl`, resumo em `pairs.summary.json`): 526 pares em 3 min
+50 s, 423 de compilação e 103 de teste. Dos 423, a correção sugerida pelo compilador refaz o original
+em 258 (61 %).
+
+Limites conhecidos:
+
+- **As sementes nunca são tarefas de medição.** `gen.mjs` recusa rodar se uma semente define uma
+  função que existe em `tasks.mjs`. Ao criar tarefa ou semente, mantenha os dois conjuntos separados.
+- **Os pares de teste dizem pouco.** A saída do teste hoje é só "the program trapped (unreachable)":
+  a mensagem do `assert` (esquerda e direita) não chega. Melhorar isso é trabalho no worker do site.
+- São erros de um lugar só, em programas pequenos e parecidos. Servem de primeiro degrau, não
+  substituem erros reais de quem usa.
+

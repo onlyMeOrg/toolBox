@@ -1,0 +1,82 @@
+<!doctype html><meta charset="utf-8"><pre id="log"></pre>
+<script type="module">
+// Training data by mutation: every seed is proven first, then each mutant goes through the real
+// compiler. A mutant that does not build becomes a pair (broken file, the compiler's errors, the
+// correct file); one that builds and fails the seed's tests becomes a "wrong results" pair; one that
+// still passes is thrown away. Driven by gen.mjs. Query: only=id,id  shard=i/n  per=2
+import { TILE_HEAD } from '../tasks.mjs';
+import { SEEDS } from './seeds.mjs';
+import { mutants } from './mutate.mjs';
+const P = new URLSearchParams(location.search);
+const R = window.R = { rows: [], seeds: [], dropped: {} };
+const log = (...a) => { console.log(...a); document.getElementById('log').textContent += a.join(' ') + '\n'; };
+
+// ---- the site's build worker (the same client as ../lab.html)
+const k = new Worker('/agente/build-worker.js', { type: 'module' });
+let job = 0; const waiting = new Map();
+const kready = new Promise((ok, bad) => { k.onmessage = (e) => { const m = e.data;
+  if (m.type === 'ready') ok(); else if (m.type === 'error' && m.id === undefined) bad(new Error(m.text));
+  else if (waiting.has(m.id)) { const w = waiting.get(m.id);
+    if (m.type === 'output') w.out += m.text;
+    else if (m.type === 'diagnostics') w.diags = m.items;
+    else if (m.type === 'error') { waiting.delete(m.id); w.ok({ code: -1, crashed: true, out: w.out + m.text, diags: [] }); }
+    else if (m.type === 'done') { if (m.stage === 'compile') { w.compile = m; if (!m.runs) { waiting.delete(m.id); w.ok({ code: m.code, out: w.out, diags: w.diags ?? [], ms: m.ms }); } }
+      else { waiting.delete(m.id); w.ok({ code: w.compile.code, out: w.out, diags: w.diags ?? [], run: m.code, timedOut: m.timedOut, ms: w.compile.ms }); } } } }; });
+const tc = await (await fetch('/agente/toolchain/current.json')).json();
+k.postMessage({ type: 'load', base: new URL(`/agente/toolchain/${tc.tag}/`, location.href).href });
+const compile = (type, source) => new Promise((ok) => { const id = ++job; waiting.set(id, { ok, out: '' }); k.postMessage({ type, id, source }); });
+await kready;
+R.toolchain = tc.tag;
+
+// The same text the agent's loop shows the model (../lab.html): keep the two equal.
+const describe = (source, diags) => { const lines = source.split('\n'); return diags.filter((d) => d.level === 'error').slice(0, 3).map((d) => `error${d.code ? `[${d.code}]` : ''}: ${d.message}` + (d.line ? `\n  at line ${d.line}: ${(lines[d.line - 1] ?? '').trim()}` : '')).join('\n'); };
+const trimErr = (s) => s.split('\n').filter((l) => !/^\s*$/.test(l)).slice(0, 25).join('\n').slice(0, 1200);
+const applyFixes = (source, diags, kinds) => { const enc = new TextEncoder(); const bytes = enc.encode(source);
+  const fixes = diags.filter((d) => d.level === 'error').flatMap((d) => d.fixes).filter((f) => kinds.includes(f.applicability) && f.start <= f.end && f.end <= bytes.length).sort((a, b) => a.start - b.start || a.end - b.end);
+  const kept = []; for (const f of fixes) { const l = kept[kept.length - 1]; if (l && (f.start < l.end || (f.start === l.start && f.end === l.end))) continue; kept.push(f); }
+  if (!kept.length) return null; const parts = []; let at = 0; for (const f of kept) { parts.push(bytes.subarray(at, f.start), enc.encode(f.replacement)); at = f.end; } parts.push(bytes.subarray(at));
+  const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0)); let o = 0; for (const p of parts) { out.set(p, o); o += p.length; } return new TextDecoder().decode(out); };
+
+const withTests = (seed, code) => seed.kind === 'fn' ? code + `\n#[cfg(test)]\nmod hidden_tests {\n    use super::*;\n    #[test]\n    fn hidden() { ${seed.tests} }\n}\n` : code;
+const judge = async (seed, code) => {
+  const r = await compile(seed.kind === 'fn' ? 'test' : 'build', withTests(seed, code));
+  if (r.crashed) return { stage: 'crash', out: r.out };
+  if (r.code !== 0) return { stage: 'compile', diags: r.diags };
+  if (seed.kind === 'fn' && r.run !== 0) return { stage: 'test', out: trimErr(r.out), timedOut: r.timedOut };
+  return { stage: 'pass' };
+};
+const drop = (why) => { R.dropped[why] = (R.dropped[why] ?? 0) + 1; };
+const [SHARD, SHARDS] = (P.get('shard') ?? '0/1').split('/').map(Number);
+const ONLY = P.get('only')?.split(',');
+const PER = +(P.get('per') ?? 2);
+let tiles = 0;
+for (const [n, seed] of SEEDS.entries()) {
+  const headToo = seed.kind === 'tile' && tiles++ < 2;   // the tile's fixed head is mutated on two seeds only: it is the same text in all of them
+  if (ONLY ? !ONLY.includes(seed.id) : n % SHARDS !== SHARD) continue;
+  const proof = await judge(seed, seed.code);
+  R.seeds.push({ id: seed.id, kind: seed.kind, ok: proof.stage === 'pass', why: proof.stage === 'pass' ? undefined : proof.stage === 'compile' ? describe(seed.code, proof.diags) : proof.out });
+  if (proof.stage !== 'pass') { log('SEED FAILS', seed.id, R.seeds.at(-1).why); continue; }
+  const lines = seed.code.split('\n').length;
+  for (const m of mutants(seed.id, seed.code, PER)) {
+    if (seed.kind === 'tile' && !headToo && !m.code.startsWith(TILE_HEAD)) { drop('tile head'); continue; }
+    const v = await judge(seed, m.code);
+    if (v.stage === 'pass') { drop('still passes'); continue; }
+    if (v.stage === 'crash') { drop('compiler crashed'); log('crash', seed.id, m.op, v.out.slice(0, 200)); continue; }
+    const row = { id: `${seed.id}:${m.op}:${R.rows.filter((r) => r.seed === seed.id && r.op === m.op).length}`, seed: seed.id, kind: seed.kind, op: m.op, stage: v.stage, ask: seed.ask, broken: m.code, fixed: seed.code };
+    if (v.stage === 'compile') {
+      const errors = v.diags.filter((d) => d.level === 'error');
+      // An error in the hidden test (a changed signature) cannot be repaired from the file: not a pair.
+      if (errors.length === 0 || errors.some((d) => d.line > lines)) { drop('error outside the file'); continue; }
+      row.why = describe(m.code, v.diags);
+      row.codes = [...new Set(errors.map((d) => d.code).filter(Boolean))];
+      // What the compiler's own fixes do: the agent applies those without the model.
+      const sure = applyFixes(m.code, v.diags, ['MachineApplicable']);
+      const maybe = sure ? null : applyFixes(m.code, v.diags, ['MaybeIncorrect']);
+      row.autofix = sure === seed.code ? 'sure' : maybe === seed.code ? 'maybe' : sure || maybe ? 'other' : 'none';
+    } else { row.why = v.out; if (v.timedOut) row.timedOut = true; }
+    R.rows.push(row);
+    log(row.id, '|', row.stage, '|', row.autofix ?? '', '|', row.why.split('\n')[0].slice(0, 120));
+  }
+}
+R.done = true;
+</script>
