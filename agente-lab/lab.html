@@ -1,0 +1,151 @@
+<!doctype html><meta charset="utf-8"><pre id="log"></pre>
+<!-- The agent's loop against the measuring set: the model writes, the real compiler builds, the
+     compiler's own fixes are applied, the model repairs, hidden checks decide. Driven by run.mjs.
+     ?model=file.gguf &calls=N (model calls per task) &only=id,id &few=1 (solved examples in the prompt)
+     &shard=i/n (every n-th task starting at i, to split a run across machines) -->
+<script type="module">
+import { Wllama } from '/wllama/index.js';
+import { TASKS, TILE_HEAD } from './tasks.mjs';
+const P = new URLSearchParams(location.search);
+const MODEL = P.get('model'), ONLY = P.get('only');
+const [SHARD, SHARDS] = (P.get('shard') ?? '0/1').split('/').map(Number);
+const log = (...a) => { const t = a.join(' '); document.getElementById('log').textContent += t + '\n'; console.log(t); };
+const R = window.R = { tasks: [] };
+
+// ---- compiler
+const k = new Worker('/agente/build-worker.js', { type: 'module' });
+let job = 0; const waiting = new Map();
+const kready = new Promise((ok, bad) => { k.onmessage = (e) => { const m = e.data;
+  if (m.type === 'ready') ok(); else if (m.type === 'error' && m.id === undefined) bad(new Error(m.text));
+  else if (waiting.has(m.id)) { const w = waiting.get(m.id);
+    if (m.type === 'output') w.out += m.text;
+    else if (m.type === 'diagnostics') w.diags = m.items;
+    else if (m.type === 'error') { waiting.delete(m.id); w.ok({ code: -1, out: w.out + m.text }); }
+    else if (m.type === 'done') { if (m.stage === 'compile') { w.compile = m; if (!m.runs) { waiting.delete(m.id); w.ok({ code: m.code, out: w.out, diags: w.diags ?? [], bytes: m.bytes, memory: m.memory, ms: m.ms }); } }
+      else { waiting.delete(m.id); w.ok({ code: w.compile.code, out: w.out, diags: w.diags ?? [], run: m.code, timedOut: m.timedOut, ms: w.compile.ms }); } } } }; });
+const tc = await (await fetch('/agente/toolchain/current.json')).json();
+k.postMessage({ type: 'load', base: new URL(`/agente/toolchain/${tc.tag}/`, location.href).href });
+const compile = (type, source) => new Promise((ok) => { const id = ++job; waiting.set(id, { ok, out: '' }); k.postMessage({ type, id, source }); });
+
+// ---- tile check: run 3 frames, give back the pixels
+const RUN = `onmessage = async (e) => { const { bytes, memory: lim, w, h } = e.data; try {
+  const module = await WebAssembly.compile(bytes); const memory = new WebAssembly.Memory({ initial: lim.initial, maximum: Math.min(lim.maximum ?? 4096, 4096), shared: true });
+  const dv = () => new DataView(memory.buffer); const wasi = { fd_write(fd, iovs, n, nw) { let t = 0; for (let i = 0; i < n; i++) t += dv().getUint32(iovs + i * 8 + 4, true); dv().setUint32(nw, t, true); return 0; },
+    environ_sizes_get(a, b) { dv().setUint32(a, 0, true); dv().setUint32(b, 0, true); return 0; }, environ_get() { return 0; }, clock_time_get(i, p, ptr) { dv().setBigUint64(ptr, 0n, true); return 0; }, sched_yield() { return 0; }, proc_exit(c) { throw new Error('exit ' + c); } };
+  const imports = {}; for (const im of WebAssembly.Module.imports(module)) { imports[im.module] ??= {}; imports[im.module][im.name] = im.kind === 'memory' ? memory : (wasi[im.name] || (() => 52)); }
+  const x = (await WebAssembly.instantiate(module, imports)).exports; if (!x.init || !x.frame) throw new Error('missing export: ' + (!x.init ? 'init' : 'frame'));
+  x._initialize?.(); x.init(w, h); let ptr = 0; for (const t of [0, 16, 33]) ptr = x.frame(t) >>> 0;
+  if (!ptr || ptr + w * h * 4 > memory.buffer.byteLength) throw new Error('frame returned a bad pointer');
+  postMessage({ px: new Uint8Array(memory.buffer, ptr, w * h * 4).slice() }); } catch (err) { postMessage({ error: String(err.message || err) }); } };`;
+const runTile = (b) => new Promise((ok) => { const w = new Worker(URL.createObjectURL(new Blob([RUN], { type: 'text/javascript' }))); const t = setTimeout(() => { w.terminate(); ok({ error: 'timed out after 3 s' }); }, 3000);
+  w.onmessage = (e) => { clearTimeout(t); w.terminate(); ok(e.data); }; w.onerror = (e) => { clearTimeout(t); ok({ error: e.message }); }; w.postMessage({ bytes: b.bytes, memory: b.memory, w: 64, h: 48 }); });
+
+// ---- model
+const wllama = new Wllama({ default: '/wllama/wasm/wllama.wasm' });
+let t0 = performance.now();
+await Promise.all([kready, fetch('/model/' + MODEL).then((r) => r.blob()).then((blob) => wllama.loadModel([blob], { n_ctx: 4096, n_threads: +(P.get('threads') ?? 4) }))]);
+R.loadMs = performance.now() - t0; R.threads = wllama.getNumThreads?.(); R.multi = wllama.isMultithread?.();
+log('ready', Math.round(R.loadMs), 'ms; threads', R.threads, 'multi', R.multi);
+
+
+// ---- loop v2: prefilled generation with stops, the compiler's own fixes, then single-turn repairs
+const applyFixes = (source, diags, kinds) => { const enc = new TextEncoder(); const bytes = enc.encode(source);
+  const fixes = diags.filter((d) => d.level === 'error').flatMap((d) => d.fixes).filter((f) => kinds.includes(f.applicability) && f.start <= f.end && f.end <= bytes.length).sort((a, b) => a.start - b.start || a.end - b.end);
+  const kept = []; for (const f of fixes) { const l = kept[kept.length - 1]; if (l && (f.start < l.end || (f.start === l.start && f.end === l.end))) continue; kept.push(f); }
+  if (!kept.length) return null; const parts = []; let at = 0; for (const f of kept) { parts.push(bytes.subarray(at, f.start), enc.encode(f.replacement)); at = f.end; } parts.push(bytes.subarray(at));
+  const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0)); let o = 0; for (const p of parts) { out.set(p, o); o += p.length; } const fixed = new TextDecoder().decode(out); return fixed === source ? null : fixed; };
+const describe = (source, diags) => { const lines = source.split('\n'); return diags.filter((d) => d.level === 'error').slice(0, 3).map((d) => `error${d.code ? `[${d.code}]` : ''}: ${d.message}` + (d.line ? `\n  at line ${d.line}: ${(lines[d.line - 1] ?? '').trim()}` : '')).join('\n'); };
+const SYS = 'You are an expert Rust programmer. You write one complete Rust library file (edition 2024, standard library only, no external crates, no fn main, no tests).';
+const TILE_NOTE = '\nIt is a "tile" program: the host calls init once and frame every frame; frame returns the RGBA pixels. Complete the file that is started for you: write the body of the loop (set pixels[i], pixels[i + 1], pixels[i + 2] and pixels[i + 3]), close the loops, and end frame with `pixels.as_ptr()`.';
+// Solved examples of similar (not the same) tasks, shown before the request when ?few=1.
+const TILE_EX = [
+  ['Write a tile program that draws vertical stripes 4 pixels wide, alternating blue and yellow. Alpha is 255.',
+   `            let yellow = (x / 4) % 2 == 1;
+            pixels[i] = if yellow { 255 } else { 0 };
+            pixels[i + 1] = if yellow { 255 } else { 0 };
+            pixels[i + 2] = if yellow { 0 } else { 255 };
+            pixels[i + 3] = 255;
+        }
+    }
+    pixels.as_ptr()
+}
+`],
+  ['Write a tile program that fills the canvas with a vertical gradient of gray: black at the top edge, white at the bottom edge. Alpha is 255.',
+   `            let level = (y * 255 / (height - 1)) as u8;
+            pixels[i] = level;
+            pixels[i + 1] = level;
+            pixels[i + 2] = level;
+            pixels[i + 3] = 255;
+        }
+    }
+    pixels.as_ptr()
+}
+`],
+];
+const FN_EX = [
+  ['Write `pub fn count_vowels(s: &str) -> usize` that counts the vowels (a, e, i, o, u) in s, ignoring case.',
+   `pub fn count_vowels(s: &str) -> usize {
+    s.chars()
+        .filter(|c| matches!(c.to_ascii_lowercase(), 'a' | 'e' | 'i' | 'o' | 'u'))
+        .count()
+}
+`],
+  ['Write `pub fn squares_up_to(n: u64) -> Vec<u64>` that returns every perfect square less than or equal to n, in increasing order.',
+   `pub fn squares_up_to(n: u64) -> Vec<u64> {
+    let mut squares = Vec::new();
+    let mut i: u64 = 0;
+    while i * i <= n {
+        squares.push(i * i);
+        i += 1;
+    }
+    squares
+}
+`],
+];
+const FEW = P.get('few') === '1';
+const shots = (task) => !FEW ? '' : (task.kind === 'tile' ? TILE_EX : FN_EX).map(([q, a], n) => `Example ${n + 1}. Request: ${q}${task.kind === 'tile' ? TILE_NOTE : ''}\nAnswer:\n\`\`\`rust\n${task.kind === 'tile' ? TILE_HEAD : ''}${a}\`\`\`\n\n`).join('') + 'Now the real request. ';
+const chatml = (user, prefill) => `<|im_start|>system\n${SYS}<|im_end|>\n<|im_start|>user\n${user}<|im_end|>\n<|im_start|>assistant\n\`\`\`rust\n${prefill}`;
+const clean = (code) => code.replace(/\n(?:\/\/[^\n]*\n)*\s*$/, '\n').trimEnd() + '\n';
+let calls = 0;
+async function generate(user, prefill, temperature) {
+  const g0 = performance.now(); calls++;
+  const res = await wllama.createCompletion({ prompt: chatml(user, prefill), max_tokens: 600, temperature, seed: 1 + calls, stop: ['\n```', '\nfn main', '\n#[cfg(test)]', '<|im_end|>'] });
+  return { code: clean(prefill + res.choices[0].text), genMs: Math.round(performance.now() - g0), tokens: res.usage?.completion_tokens, promptTokens: res.usage?.prompt_tokens };
+}
+async function judge(task, code) {
+  if (task.kind === 'fn') {
+    const r = await compile('test', code + `\n#[cfg(test)]\nmod hidden_tests {\n    use super::*;\n    #[test]\n    fn hidden() { ${task.tests} }\n}\n`);
+    if (r.code !== 0) return { stage: 'compile', diags: r.diags, out: r.out };
+    return r.run === 0 ? { stage: 'pass' } : { stage: 'test', out: trimErr(r.out), timedOut: r.timedOut };
+  }
+  const r = await compile('build', code);
+  if (r.code !== 0) return { stage: 'compile', diags: r.diags, out: r.out };
+  const t = await runTile(r); if (t.error) return { stage: 'run', out: t.error };
+  return task.check(t.px, 64, 48) ? { stage: 'pass' } : { stage: 'wrong' };
+}
+const trimErr = (s) => s.split('\n').filter((l) => !/^\s*$/.test(l)).slice(0, 25).join('\n').slice(0, 1200);
+const MODEL_CALLS = +(P.get('calls') ?? 3);
+for (const [n, task] of TASKS.entries()) {
+  if (ONLY ? !ONLY.split(',').includes(task.id) : n % SHARDS !== SHARD) continue;
+  const rec = { id: task.id, kind: task.kind, steps: [], pass: false, modelCalls: 0, autofixes: 0 }; R.tasks.push(rec);
+  const ask = shots(task) + task.ask + (task.kind === 'tile' ? TILE_NOTE : ''); const head = task.kind === 'tile' ? TILE_HEAD : '';
+  let g = await generate(ask, head, 0); rec.modelCalls++; let code = g.code; rec.steps.push({ what: 'write', ...g });
+  for (;;) {
+    let v = await judge(task, code);
+    // The compiler's own fixes first: sure ones, then the ones it is less sure of.
+    for (let round = 0; v.stage === 'compile' && round < 4; round++) {
+      const fixed = applyFixes(code, v.diags, ['MachineApplicable']) ?? applyFixes(code, v.diags, ['MaybeIncorrect']);
+      if (!fixed) break; code = fixed; rec.autofixes++; rec.steps.push({ what: 'autofix', code }); v = await judge(task, code);
+    }
+    log(task.id, '|', v.stage, '| calls', rec.modelCalls, 'autofixes', rec.autofixes, '|', g.genMs, 'ms', g.tokens, 'tok |', (v.stage === 'compile' ? describe(code, v.diags) : v.out ?? '').split('\n').slice(0, 2).join(' / ').slice(0, 170));
+    rec.last = v.stage;
+    if (v.stage === 'pass') { rec.pass = true; break; }
+    if (rec.modelCalls >= MODEL_CALLS) break;
+    const why = v.stage === 'compile' ? `It does not compile:\n${describe(code, v.diags)}` : v.stage === 'test' ? `It compiles, but it gives wrong results:\n${v.out}` : v.stage === 'run' ? `It compiles, but it fails when it runs: ${v.out}` : 'It compiles and runs, but the picture is not what was asked.';
+    const user = `${ask}\n\nThis attempt is wrong:\n\`\`\`rust\n${code}\`\`\`\n${why}\n\nWrite the whole corrected file.`;
+    g = await generate(user, head, 0.5); rec.modelCalls++; code = g.code; rec.steps.push({ what: 'repair', why: v.stage, ...g });
+  }
+  rec.code = code;
+}
+R.done = true;
+</script>

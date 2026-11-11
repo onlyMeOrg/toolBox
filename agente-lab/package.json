@@ -1,0 +1,13 @@
+{
+  "name": "agente-lab",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "site": "node fetch-site.mjs",
+    "verify": "node verify.mjs",
+    "measure": "node run.mjs"
+  },
+  "dependencies": {
+    "@wllama/wllama": "3.13.0"
+  }
+}
