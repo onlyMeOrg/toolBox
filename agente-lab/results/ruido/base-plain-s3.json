@@ -1,0 +1,812 @@
+{
+	"summary": {
+		"model": "base-plain-q4_0.gguf",
+		"calls": 1,
+		"seed": 3,
+		"temp": 0.3,
+		"few": false,
+		"shard": "0/1",
+		"tasks": 41,
+		"pass": 14,
+		"firstTry": 7,
+		"passFn": 14,
+		"fn": 32,
+		"passTile": 0,
+		"tile": 9,
+		"tokensPerSecond": 6.1,
+		"secondsPerTask": 36.2,
+		"loadMs": 4642
+	},
+	"tasks": [
+		{
+			"id": "fib",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "// Function to calculate the n-th Fibonacci number\npub fn fib(n: u32) -> u64 {\n    // Base cases\n    if n == 0 {\n        return 0;\n    } else if n == 1 {\n        return 1;\n    }\n\n    // Recursive case: F(n) = F(n-1) + F(n-2)\n    let mut a = 0;\n    let mut b = 1;\n    for _ in 2..=n {\n        let next = a + b;\n        a = b;\n        b = next;\n    }\n    next\n}\n\n// Example usage\n",
+					"genMs": 24299,
+					"tokens": 133,
+					"promptTokens": 105
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "compile",
+			"code": "// Function to calculate the n-th Fibonacci number\npub fn fib(n: u32) -> u64 {\n    // Base cases\n    if n == 0 {\n        return 0;\n    } else if n == 1 {\n        return 1;\n    }\n\n    // Recursive case: F(n) = F(n-1) + F(n-2)\n    let mut a = 0;\n    let mut b = 1;\n    for _ in 2..=n {\n        let next = a + b;\n        a = b;\n        b = next;\n    }\n    next\n}\n\n// Example usage\n"
+		},
+		{
+			"id": "palindrome",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Checks if a given string is a palindrome, ignoring case and non-letter/digit characters.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(is_palindrome(\"A man, a plan, a canal, Panama\"), true);\n/// assert_eq!(is_palindrome(\"No lemon, no melon\"), true);\n/// assert_eq!(is_palindrome(\"Hello, World!\"), false);\n/// assert_eq!(is_palindrome(\"12345\"), false);\n/// ```\nfn is_palindrome(s: &str) -> bool {\n    let cleaned_s: String = s.chars().filter(|c| c.is_alphanumeric()).collect();\n    cleaned_s == cleaned_s.chars().rev().collect::<String>()\n}\n",
+					"genMs": 22307,
+					"tokens": 148,
+					"promptTokens": 90
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "test",
+			"code": "/// Checks if a given string is a palindrome, ignoring case and non-letter/digit characters.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(is_palindrome(\"A man, a plan, a canal, Panama\"), true);\n/// assert_eq!(is_palindrome(\"No lemon, no melon\"), true);\n/// assert_eq!(is_palindrome(\"Hello, World!\"), false);\n/// assert_eq!(is_palindrome(\"12345\"), false);\n/// ```\nfn is_palindrome(s: &str) -> bool {\n    let cleaned_s: String = s.chars().filter(|c| c.is_alphanumeric()).collect();\n    cleaned_s == cleaned_s.chars().rev().collect::<String>()\n}\n"
+		},
+		{
+			"id": "rle",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Encodes a string into run-length encoding.\n/// Each run of equal characters is represented as a count followed by the character.\n/// An empty string results in an empty string.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(rle(\"aaabcc\"), \"3a1b2c\");\n/// assert_eq!(rle(\"\"), \"\");\n/// ```\nfn rle(input: &str) -> String {\n    if input.is_empty() {\n        return String::new();\n    }\n\n    let mut encoded = String::new();\n    let mut current_char = input.chars().next().unwrap();\n    let count = 1;\n\n    for c in input.chars() {\n        if c == current_char {\n            count += 1;\n        } else {\n            encoded.push_str(&format!(\"{}{}\", count, current_char));\n            count = 1;\n            current_char = c;\n        }\n    }\n\n    encoded.push_str(&format!(\"{}{}\", count, current_char));\n\n    encoded\n}\n\n// Check function to verify the correctness of the `rle` function\nfn check() {\n    assert_eq!(rle(\"aaabcc\"), \"3a1b2c\");\n    assert_eq!(rle(\"\"), \"\");\n    assert_eq!(rle(\"aabbcc\"), \"3a2b2c\");\n    assert_eq!(rle(\"abc\"), \"3a1b2c\");\n    assert_eq!(rle(\"aaa\"), \"3a1b1c\");\n    assert_eq!(rle(\"a\"), \"1a\");\n    assert_eq!(rle(\"aabb\"), \"3a2b2\");\n    assert_eq!(rle(\"abcc\"), \"3a1b2c\");\n    assert_eq!(rle(\"abcde\"), \"3a1b2c3d4e\");\n    println!(\"All tests passed!\");\n}\n",
+					"genMs": 53620,
+					"tokens": 380,
+					"promptTokens": 112
+				},
+				{
+					"what": "autofix",
+					"code": "/// Encodes a string into run-length encoding.\n/// Each run of equal characters is represented as a count followed by the character.\n/// An empty string results in an empty string.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(rle(\"aaabcc\"), \"3a1b2c\");\n/// assert_eq!(rle(\"\"), \"\");\n/// ```\nfn rle(input: &str) -> String {\n    if input.is_empty() {\n        return String::new();\n    }\n\n    let mut encoded = String::new();\n    let mut current_char = input.chars().next().unwrap();\n    let mut count = 1;\n\n    for c in input.chars() {\n        if c == current_char {\n            count += 1;\n        } else {\n            encoded.push_str(&format!(\"{}{}\", count, current_char));\n            count = 1;\n            current_char = c;\n        }\n    }\n\n    encoded.push_str(&format!(\"{}{}\", count, current_char));\n\n    encoded\n}\n\n// Check function to verify the correctness of the `rle` function\nfn check() {\n    assert_eq!(rle(\"aaabcc\"), \"3a1b2c\");\n    assert_eq!(rle(\"\"), \"\");\n    assert_eq!(rle(\"aabbcc\"), \"3a2b2c\");\n    assert_eq!(rle(\"abc\"), \"3a1b2c\");\n    assert_eq!(rle(\"aaa\"), \"3a1b1c\");\n    assert_eq!(rle(\"a\"), \"1a\");\n    assert_eq!(rle(\"aabb\"), \"3a2b2\");\n    assert_eq!(rle(\"abcc\"), \"3a1b2c\");\n    assert_eq!(rle(\"abcde\"), \"3a1b2c3d4e\");\n    println!(\"All tests passed!\");\n}\n"
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 1,
+			"last": "test",
+			"code": "/// Encodes a string into run-length encoding.\n/// Each run of equal characters is represented as a count followed by the character.\n/// An empty string results in an empty string.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(rle(\"aaabcc\"), \"3a1b2c\");\n/// assert_eq!(rle(\"\"), \"\");\n/// ```\nfn rle(input: &str) -> String {\n    if input.is_empty() {\n        return String::new();\n    }\n\n    let mut encoded = String::new();\n    let mut current_char = input.chars().next().unwrap();\n    let mut count = 1;\n\n    for c in input.chars() {\n        if c == current_char {\n            count += 1;\n        } else {\n            encoded.push_str(&format!(\"{}{}\", count, current_char));\n            count = 1;\n            current_char = c;\n        }\n    }\n\n    encoded.push_str(&format!(\"{}{}\", count, current_char));\n\n    encoded\n}\n\n// Check function to verify the correctness of the `rle` function\nfn check() {\n    assert_eq!(rle(\"aaabcc\"), \"3a1b2c\");\n    assert_eq!(rle(\"\"), \"\");\n    assert_eq!(rle(\"aabbcc\"), \"3a2b2c\");\n    assert_eq!(rle(\"abc\"), \"3a1b2c\");\n    assert_eq!(rle(\"aaa\"), \"3a1b1c\");\n    assert_eq!(rle(\"a\"), \"1a\");\n    assert_eq!(rle(\"aabb\"), \"3a2b2\");\n    assert_eq!(rle(\"abcc\"), \"3a1b2c\");\n    assert_eq!(rle(\"abcde\"), \"3a1b2c3d4e\");\n    println!(\"All tests passed!\");\n}\n"
+		},
+		{
+			"id": "primes",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Returns a vector containing all prime numbers up to and including n.\n/// \n/// # Examples\n/// \n/// ```\n/// assert_eq!(primes_up_to(10), vec![2, 3, 5, 7, 11, 13, 17, 19]);\n/// assert_eq!(primes_up_to(20), vec![2, 3, 5, 7, 11, 13, 17, 19, 23, 29]);\n/// ```\nfn primes_up_to(n: u32) -> Vec<u32> {\n    let mut primes: Vec<u32> = Vec::new();\n    for num in 2..=n {\n        if is_prime(num) {\n            primes.push(num);\n        }\n    }\n    primes\n}\n\n/// Checks if a number is prime.\nfn is_prime(num: u32) -> bool {\n    if num <= 1 {\n        return false;\n    }\n    for i in 2..=((num as f64).sqrt() as u32) {\n        if num % i == 0 {\n            return false;\n        }\n    }\n    true\n}\n\n// Check function to verify the correctness of the primes_up_to function.\nfn check() {\n    assert_eq!(primes_up_to(10), vec![2, 3, 5, 7, 11, 13, 17, 19]);\n    assert_eq!(primes_up_to(20), vec![2, 3, 5, 7, 11, 13, 17, 19, 23, 29]);\n    assert_eq!(primes_up_to(1), vec![]);\n    assert_eq!(primes_up_to(2), vec![2]);\n    println!(\"All tests passed successfully!\");\n}\n",
+					"genMs": 55459,
+					"tokens": 402,
+					"promptTokens": 88
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "/// Returns a vector containing all prime numbers up to and including n.\n/// \n/// # Examples\n/// \n/// ```\n/// assert_eq!(primes_up_to(10), vec![2, 3, 5, 7, 11, 13, 17, 19]);\n/// assert_eq!(primes_up_to(20), vec![2, 3, 5, 7, 11, 13, 17, 19, 23, 29]);\n/// ```\nfn primes_up_to(n: u32) -> Vec<u32> {\n    let mut primes: Vec<u32> = Vec::new();\n    for num in 2..=n {\n        if is_prime(num) {\n            primes.push(num);\n        }\n    }\n    primes\n}\n\n/// Checks if a number is prime.\nfn is_prime(num: u32) -> bool {\n    if num <= 1 {\n        return false;\n    }\n    for i in 2..=((num as f64).sqrt() as u32) {\n        if num % i == 0 {\n            return false;\n        }\n    }\n    true\n}\n\n// Check function to verify the correctness of the primes_up_to function.\nfn check() {\n    assert_eq!(primes_up_to(10), vec![2, 3, 5, 7, 11, 13, 17, 19]);\n    assert_eq!(primes_up_to(20), vec![2, 3, 5, 7, 11, 13, 17, 19, 23, 29]);\n    assert_eq!(primes_up_to(1), vec![]);\n    assert_eq!(primes_up_to(2), vec![2]);\n    println!(\"All tests passed successfully!\");\n}\n"
+		},
+		{
+			"id": "wordcount",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "// Import necessary packages\nuse std::collections::HashMap;\n\n/// Counts the occurrences of each word in a given text.\n/// Words are considered to be separated by whitespace and are case-insensitive.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(word_count(\"Hello World\"), HashMap::from([(String::from(\"hello\"), 1), (String::from(\"world\"), 1)]));\n/// assert_eq!(word_count(\"Rust Programming\"), HashMap::from([(String::from(\"rust\"), 1), (String::from(\"programming\"), 1)]));\n/// ```\nfn word_count(text: &str) -> HashMap<String, usize> {\n    let mut word_map = HashMap::new();\n    let words: Vec<&str> = text.split_whitespace().collect();\n    for word in words {\n        let lower_word = word.to_lowercase();\n        *word_map.entry(lower_word).or_insert(0) += 1;\n    }\n    word_map\n}\n\n// Function to check the correctness of the word_count function\nfn check() {\n    assert_eq!(word_count(\"Hello World\"), HashMap::from([(String::from(\"hello\"), 1), (String::from(\"world\"), 1)]));\n    assert_eq!(word_count(\"Rust Programming\"), HashMap::from([(String::from(\"rust\"), 1), (String::from(\"programming\"), 1)]));\n    println!(\"All tests passed successfully!\");\n}\n",
+					"genMs": 41850,
+					"tokens": 293,
+					"promptTokens": 93
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "// Import necessary packages\nuse std::collections::HashMap;\n\n/// Counts the occurrences of each word in a given text.\n/// Words are considered to be separated by whitespace and are case-insensitive.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(word_count(\"Hello World\"), HashMap::from([(String::from(\"hello\"), 1), (String::from(\"world\"), 1)]));\n/// assert_eq!(word_count(\"Rust Programming\"), HashMap::from([(String::from(\"rust\"), 1), (String::from(\"programming\"), 1)]));\n/// ```\nfn word_count(text: &str) -> HashMap<String, usize> {\n    let mut word_map = HashMap::new();\n    let words: Vec<&str> = text.split_whitespace().collect();\n    for word in words {\n        let lower_word = word.to_lowercase();\n        *word_map.entry(lower_word).or_insert(0) += 1;\n    }\n    word_map\n}\n\n// Function to check the correctness of the word_count function\nfn check() {\n    assert_eq!(word_count(\"Hello World\"), HashMap::from([(String::from(\"hello\"), 1), (String::from(\"world\"), 1)]));\n    assert_eq!(word_count(\"Rust Programming\"), HashMap::from([(String::from(\"rust\"), 1), (String::from(\"programming\"), 1)]));\n    println!(\"All tests passed successfully!\");\n}\n"
+		},
+		{
+			"id": "gcd",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Calculate the greatest common divisor (GCD) of two numbers `a` and `b`.\n/// The GCD of two numbers is the largest positive integer that divides both numbers without a remainder.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(gcd(48, 18), 6);\n/// assert_eq!(gcd(25, 15), 5);\n/// ```\nfn gcd(a: u64, b: u64) -> u64 {\n    if a == 0 {\n        return b;\n    }\n    if b == 0 {\n        return a;\n    }\n    while b != 0 {\n        let temp = b;\n        b = a % b;\n        a = temp;\n    }\n    a\n}\n\n// A simple check function to verify the correctness of the gcd function.\nfn check_gcd() {\n    assert_eq!(gcd(48, 18), 6);\n    assert_eq!(gcd(25, 15), 5);\n    assert_eq!(gcd(0, 5), 0);\n    assert_eq!(gcd(100, 200), 20);\n    println!(\"All tests passed successfully.\");\n}\n",
+					"genMs": 35200,
+					"tokens": 254,
+					"promptTokens": 91
+				},
+				{
+					"what": "autofix",
+					"code": "/// Calculate the greatest common divisor (GCD) of two numbers `a` and `b`.\n/// The GCD of two numbers is the largest positive integer that divides both numbers without a remainder.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(gcd(48, 18), 6);\n/// assert_eq!(gcd(25, 15), 5);\n/// ```\nfn gcd(mut a: u64, mut b: u64) -> u64 {\n    if a == 0 {\n        return b;\n    }\n    if b == 0 {\n        return a;\n    }\n    while b != 0 {\n        let temp = b;\n        b = a % b;\n        a = temp;\n    }\n    a\n}\n\n// A simple check function to verify the correctness of the gcd function.\nfn check_gcd() {\n    assert_eq!(gcd(48, 18), 6);\n    assert_eq!(gcd(25, 15), 5);\n    assert_eq!(gcd(0, 5), 0);\n    assert_eq!(gcd(100, 200), 20);\n    println!(\"All tests passed successfully.\");\n}\n"
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 1,
+			"last": "pass",
+			"code": "/// Calculate the greatest common divisor (GCD) of two numbers `a` and `b`.\n/// The GCD of two numbers is the largest positive integer that divides both numbers without a remainder.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(gcd(48, 18), 6);\n/// assert_eq!(gcd(25, 15), 5);\n/// ```\nfn gcd(mut a: u64, mut b: u64) -> u64 {\n    if a == 0 {\n        return b;\n    }\n    if b == 0 {\n        return a;\n    }\n    while b != 0 {\n        let temp = b;\n        b = a % b;\n        a = temp;\n    }\n    a\n}\n\n// A simple check function to verify the correctness of the gcd function.\nfn check_gcd() {\n    assert_eq!(gcd(48, 18), 6);\n    assert_eq!(gcd(25, 15), 5);\n    assert_eq!(gcd(0, 5), 0);\n    assert_eq!(gcd(100, 200), 20);\n    println!(\"All tests passed successfully.\");\n}\n"
+		},
+		{
+			"id": "lcm",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Computes the least common multiple (LCM) of two non-negative integers `a` and `b`.\n/// If either `a` or `b` is 0, the result is 0.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(lcm(4, 6), 12);\n/// assert_eq!(lcm(21, 6), 42);\n/// assert_eq!(lcm(0, 6), 0);\n/// assert_eq!(lcm(0, 0), 0);\n/// ```\nfn lcm(a: u64, b: u64) -> u64 {\n    if a == 0 || b == 0 {\n        0\n    } else {\n        (a / gcd(a, b)) * b\n    }\n}\n\nfn gcd(a: u64, b: u64) -> u64 {\n    while b != 0 {\n        let temp = b;\n        b = a % b;\n        a = temp;\n    }\n    a\n}\n",
+					"genMs": 30713,
+					"tokens": 221,
+					"promptTokens": 94
+				},
+				{
+					"what": "autofix",
+					"code": "/// Computes the least common multiple (LCM) of two non-negative integers `a` and `b`.\n/// If either `a` or `b` is 0, the result is 0.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(lcm(4, 6), 12);\n/// assert_eq!(lcm(21, 6), 42);\n/// assert_eq!(lcm(0, 6), 0);\n/// assert_eq!(lcm(0, 0), 0);\n/// ```\nfn lcm(a: u64, b: u64) -> u64 {\n    if a == 0 || b == 0 {\n        0\n    } else {\n        (a / gcd(a, b)) * b\n    }\n}\n\nfn gcd(mut a: u64, mut b: u64) -> u64 {\n    while b != 0 {\n        let temp = b;\n        b = a % b;\n        a = temp;\n    }\n    a\n}\n"
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 1,
+			"last": "pass",
+			"code": "/// Computes the least common multiple (LCM) of two non-negative integers `a` and `b`.\n/// If either `a` or `b` is 0, the result is 0.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(lcm(4, 6), 12);\n/// assert_eq!(lcm(21, 6), 42);\n/// assert_eq!(lcm(0, 6), 0);\n/// assert_eq!(lcm(0, 0), 0);\n/// ```\nfn lcm(a: u64, b: u64) -> u64 {\n    if a == 0 || b == 0 {\n        0\n    } else {\n        (a / gcd(a, b)) * b\n    }\n}\n\nfn gcd(mut a: u64, mut b: u64) -> u64 {\n    while b != 0 {\n        let temp = b;\n        b = a % b;\n        a = temp;\n    }\n    a\n}\n"
+		},
+		{
+			"id": "reverse_words",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "// Import necessary packages\nuse std::str::SplitWhitespace;\n\n/// Reverses the words in a given string and separates them by spaces.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(reverse_words(String::from(\"Hello World\")), String::from(\"World Hello\"));\n/// assert_eq!(reverse_words(String::from(\"Rust Programming\")), String::from(\"Programming Rust\"));\n/// ```\nfn reverse_words(s: &str) -> String {\n    let words: Vec<&str> = s.split_whitespace().collect();\n    words.reverse();\n    words.join(\" \")\n}\n\n// Function to check the correctness of the reverse_words function\nfn check_reverse_words() {\n    assert_eq!(reverse_words(String::from(\"Hello World\")), String::from(\"World Hello\"));\n    assert_eq!(reverse_words(String::from(\"Rust Programming\")), String::from(\"Programming Rust\"));\n    assert_eq!(reverse_words(String::from(\"\")), String::from(\"\"));\n    assert_eq!(reverse_words(String::from(\"One Two Three\")), String::from(\"Three Two One\"));\n    println!(\"All tests passed successfully!\");\n}\n",
+					"genMs": 33700,
+					"tokens": 223,
+					"promptTokens": 88
+				},
+				{
+					"what": "autofix",
+					"code": "// Import necessary packages\nuse std::str::SplitWhitespace;\n\n/// Reverses the words in a given string and separates them by spaces.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(reverse_words(String::from(\"Hello World\")), String::from(\"World Hello\"));\n/// assert_eq!(reverse_words(String::from(\"Rust Programming\")), String::from(\"Programming Rust\"));\n/// ```\nfn reverse_words(s: &str) -> String {\n    let mut words: Vec<&str> = s.split_whitespace().collect();\n    words.reverse();\n    words.join(\" \")\n}\n\n// Function to check the correctness of the reverse_words function\nfn check_reverse_words() {\n    assert_eq!(reverse_words(&String::from(\"Hello World\")), String::from(\"World Hello\"));\n    assert_eq!(reverse_words(&String::from(\"Rust Programming\")), String::from(\"Programming Rust\"));\n    assert_eq!(reverse_words(&String::from(\"\")), String::from(\"\"));\n    assert_eq!(reverse_words(&String::from(\"One Two Three\")), String::from(\"Three Two One\"));\n    println!(\"All tests passed successfully!\");\n}\n"
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 1,
+			"last": "pass",
+			"code": "// Import necessary packages\nuse std::str::SplitWhitespace;\n\n/// Reverses the words in a given string and separates them by spaces.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(reverse_words(String::from(\"Hello World\")), String::from(\"World Hello\"));\n/// assert_eq!(reverse_words(String::from(\"Rust Programming\")), String::from(\"Programming Rust\"));\n/// ```\nfn reverse_words(s: &str) -> String {\n    let mut words: Vec<&str> = s.split_whitespace().collect();\n    words.reverse();\n    words.join(\" \")\n}\n\n// Function to check the correctness of the reverse_words function\nfn check_reverse_words() {\n    assert_eq!(reverse_words(&String::from(\"Hello World\")), String::from(\"World Hello\"));\n    assert_eq!(reverse_words(&String::from(\"Rust Programming\")), String::from(\"Programming Rust\"));\n    assert_eq!(reverse_words(&String::from(\"\")), String::from(\"\"));\n    assert_eq!(reverse_words(&String::from(\"One Two Three\")), String::from(\"Three Two One\"));\n    println!(\"All tests passed successfully!\");\n}\n"
+		},
+		{
+			"id": "anagram",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Determines if two strings are anagrams of each other, ignoring case and spaces.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(is_anagram(\"listen\", \"silent\"), true);\n/// assert_eq!(is_anagram(\"hello\", \"billion\"), false);\n/// assert_eq!(is_anagram(\"apple\", \"pale\"), true);\n/// assert_eq!(is_anagram(\"apple\", \"pale\"), false);\n/// ```\nfn is_anagram(a: &str, b: &str) -> bool {\n    // Remove spaces and convert to lowercase for case-insensitive comparison\n    let cleaned_a = a.chars().filter(|c| !c.is_whitespace()).collect::<Vec<char>>();\n    let cleaned_b = b.chars().filter(|c| !c.is_whitespace()).collect::<Vec<char>>();\n\n    // Sort the characters of both strings and compare\n    cleaned_a.sort_unstable();\n    cleaned_b.sort_unstable();\n\n    cleaned_a == cleaned_b\n}\n",
+					"genMs": 27483,
+					"tokens": 200,
+					"promptTokens": 94
+				},
+				{
+					"what": "autofix",
+					"code": "/// Determines if two strings are anagrams of each other, ignoring case and spaces.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(is_anagram(\"listen\", \"silent\"), true);\n/// assert_eq!(is_anagram(\"hello\", \"billion\"), false);\n/// assert_eq!(is_anagram(\"apple\", \"pale\"), true);\n/// assert_eq!(is_anagram(\"apple\", \"pale\"), false);\n/// ```\nfn is_anagram(a: &str, b: &str) -> bool {\n    // Remove spaces and convert to lowercase for case-insensitive comparison\n    let mut cleaned_a = a.chars().filter(|c| !c.is_whitespace()).collect::<Vec<char>>();\n    let mut cleaned_b = b.chars().filter(|c| !c.is_whitespace()).collect::<Vec<char>>();\n\n    // Sort the characters of both strings and compare\n    cleaned_a.sort_unstable();\n    cleaned_b.sort_unstable();\n\n    cleaned_a == cleaned_b\n}\n"
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 1,
+			"last": "test",
+			"code": "/// Determines if two strings are anagrams of each other, ignoring case and spaces.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(is_anagram(\"listen\", \"silent\"), true);\n/// assert_eq!(is_anagram(\"hello\", \"billion\"), false);\n/// assert_eq!(is_anagram(\"apple\", \"pale\"), true);\n/// assert_eq!(is_anagram(\"apple\", \"pale\"), false);\n/// ```\nfn is_anagram(a: &str, b: &str) -> bool {\n    // Remove spaces and convert to lowercase for case-insensitive comparison\n    let mut cleaned_a = a.chars().filter(|c| !c.is_whitespace()).collect::<Vec<char>>();\n    let mut cleaned_b = b.chars().filter(|c| !c.is_whitespace()).collect::<Vec<char>>();\n\n    // Sort the characters of both strings and compare\n    cleaned_a.sort_unstable();\n    cleaned_b.sort_unstable();\n\n    cleaned_a == cleaned_b\n}\n"
+		},
+		{
+			"id": "sum_digits",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Calculates the sum of the decimal digits of a given non-negative integer.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(sum_digits(12345), 15);\n/// assert_eq!(sum_digits(98765), 45);\n/// ```\nfn sum_digits(n: u64) -> u32 {\n    let mut sum = 0;\n    while n > 0 {\n        sum += n % 10;\n        n /= 10;\n    }\n    sum\n}\n\n// Function to check the correctness of the `sum_digits` function\nfn check() {\n    assert_eq!(sum_digits(12345), 15);\n    assert_eq!(sum_digits(98765), 45);\n    assert_eq!(sum_digits(14789), 45);\n    assert_eq!(sum_digits(0), 0);\n    assert_eq!(sum_digits(11111111), 55);\n    println!(\"All tests passed successfully!\");\n}\n",
+					"genMs": 30025,
+					"tokens": 222,
+					"promptTokens": 81
+				},
+				{
+					"what": "autofix",
+					"code": "/// Calculates the sum of the decimal digits of a given non-negative integer.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(sum_digits(12345), 15);\n/// assert_eq!(sum_digits(98765), 45);\n/// ```\nfn sum_digits(n: u64) -> u32 {\n    let mut sum = 0;\n    while n > 0 {\n        sum += n % 10;\n        n /= 10;\n    }\n    sum.try_into().unwrap()\n}\n\n// Function to check the correctness of the `sum_digits` function\nfn check() {\n    assert_eq!(sum_digits(12345), 15);\n    assert_eq!(sum_digits(98765), 45);\n    assert_eq!(sum_digits(14789), 45);\n    assert_eq!(sum_digits(0), 0);\n    assert_eq!(sum_digits(11111111), 55);\n    println!(\"All tests passed successfully!\");\n}\n"
+				},
+				{
+					"what": "autofix",
+					"code": "/// Calculates the sum of the decimal digits of a given non-negative integer.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(sum_digits(12345), 15);\n/// assert_eq!(sum_digits(98765), 45);\n/// ```\nfn sum_digits(mut n: u64) -> u32 {\n    let mut sum = 0;\n    while n > 0 {\n        sum += n % 10;\n        n /= 10;\n    }\n    sum.try_into().unwrap()\n}\n\n// Function to check the correctness of the `sum_digits` function\nfn check() {\n    assert_eq!(sum_digits(12345), 15);\n    assert_eq!(sum_digits(98765), 45);\n    assert_eq!(sum_digits(14789), 45);\n    assert_eq!(sum_digits(0), 0);\n    assert_eq!(sum_digits(11111111), 55);\n    println!(\"All tests passed successfully!\");\n}\n"
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 2,
+			"last": "pass",
+			"code": "/// Calculates the sum of the decimal digits of a given non-negative integer.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(sum_digits(12345), 15);\n/// assert_eq!(sum_digits(98765), 45);\n/// ```\nfn sum_digits(mut n: u64) -> u32 {\n    let mut sum = 0;\n    while n > 0 {\n        sum += n % 10;\n        n /= 10;\n    }\n    sum.try_into().unwrap()\n}\n\n// Function to check the correctness of the `sum_digits` function\nfn check() {\n    assert_eq!(sum_digits(12345), 15);\n    assert_eq!(sum_digits(98765), 45);\n    assert_eq!(sum_digits(14789), 45);\n    assert_eq!(sum_digits(0), 0);\n    assert_eq!(sum_digits(11111111), 55);\n    println!(\"All tests passed successfully!\");\n}\n"
+		},
+		{
+			"id": "factorial",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Calculates the factorial of a given number `n`.\n/// If `n` is less than 0, returns None.\n/// If `n` is 0 or 1, returns 1.\n/// For other values, returns n!.\n///\n/// # Examples\n/// ```\n/// assert_eq!(factorial(5), Some(120));\n/// assert_eq!(factorial(0), Some(1));\n/// assert_eq!(factorial(1), Some(1));\n/// ```\nfn factorial(n: u32) -> Option<u64> {\n    if n < 0 {\n        return None;\n    }\n    if n == 0 || n == 1 {\n        return Some(1);\n    }\n\n    let mut result = 1;\n    for i in 2..=n {\n        result *= i;\n    }\n    Some(result)\n}\n\n// Function to check the correctness of the factorial function\nfn check_factorial() {\n    assert_eq!(factorial(5), Some(120));\n    assert_eq!(factorial(0), Some(1));\n    assert_eq!(factorial(1), Some(1));\n    assert_eq!(factorial(10), Some(3628800));\n    println!(\"All tests passed successfully!\");\n}\n",
+					"genMs": 35486,
+					"tokens": 267,
+					"promptTokens": 88
+				},
+				{
+					"what": "autofix",
+					"code": "/// Calculates the factorial of a given number `n`.\n/// If `n` is less than 0, returns None.\n/// If `n` is 0 or 1, returns 1.\n/// For other values, returns n!.\n///\n/// # Examples\n/// ```\n/// assert_eq!(factorial(5), Some(120));\n/// assert_eq!(factorial(0), Some(1));\n/// assert_eq!(factorial(1), Some(1));\n/// ```\nfn factorial(n: u32) -> Option<u64> {\n    if n < 0 {\n        return None;\n    }\n    if n == 0 || n == 1 {\n        return Some(1);\n    }\n\n    let mut result = 1;\n    for i in 2..=n {\n        result *= i;\n    }\n    Some(result.into())\n}\n\n// Function to check the correctness of the factorial function\nfn check_factorial() {\n    assert_eq!(factorial(5), Some(120));\n    assert_eq!(factorial(0), Some(1));\n    assert_eq!(factorial(1), Some(1));\n    assert_eq!(factorial(10), Some(3628800));\n    println!(\"All tests passed successfully!\");\n}\n"
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 1,
+			"last": "test",
+			"code": "/// Calculates the factorial of a given number `n`.\n/// If `n` is less than 0, returns None.\n/// If `n` is 0 or 1, returns 1.\n/// For other values, returns n!.\n///\n/// # Examples\n/// ```\n/// assert_eq!(factorial(5), Some(120));\n/// assert_eq!(factorial(0), Some(1));\n/// assert_eq!(factorial(1), Some(1));\n/// ```\nfn factorial(n: u32) -> Option<u64> {\n    if n < 0 {\n        return None;\n    }\n    if n == 0 || n == 1 {\n        return Some(1);\n    }\n\n    let mut result = 1;\n    for i in 2..=n {\n        result *= i;\n    }\n    Some(result.into())\n}\n\n// Function to check the correctness of the factorial function\nfn check_factorial() {\n    assert_eq!(factorial(5), Some(120));\n    assert_eq!(factorial(0), Some(1));\n    assert_eq!(factorial(1), Some(1));\n    assert_eq!(factorial(10), Some(3628800));\n    println!(\"All tests passed successfully!\");\n}\n"
+		},
+		{
+			"id": "fizzbuzz",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Generates a vector of strings representing theFizzBuzz sequence up to n.\n/// \n/// # Examples\n/// \n/// ```\n/// assert_eq!(fizzbuzz(5), vec![\"1\", \"Fizz\", \"Buzz\", \"Fizz\", \"Buzz\"]);\n/// ```\nfn fizzbuzz(n: u32) -> Vec<String> {\n    (1..=n).map(|i| {\n        if i % 3 == 0 && i % 5 == 0 {\n            \"FizzBuzz\".to_string()\n        } else if i % 3 == 0 {\n            \"Fizz\".to_string()\n        } else if i % 5 == 0 {\n            \"Buzz\".to_string()\n        } else {\n            i.to_string()\n        }\n    }).collect()\n}\n",
+					"genMs": 26232,
+					"tokens": 162,
+					"promptTokens": 112
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "/// Generates a vector of strings representing theFizzBuzz sequence up to n.\n/// \n/// # Examples\n/// \n/// ```\n/// assert_eq!(fizzbuzz(5), vec![\"1\", \"Fizz\", \"Buzz\", \"Fizz\", \"Buzz\"]);\n/// ```\nfn fizzbuzz(n: u32) -> Vec<String> {\n    (1..=n).map(|i| {\n        if i % 3 == 0 && i % 5 == 0 {\n            \"FizzBuzz\".to_string()\n        } else if i % 3 == 0 {\n            \"Fizz\".to_string()\n        } else if i % 5 == 0 {\n            \"Buzz\".to_string()\n        } else {\n            i.to_string()\n        }\n    }).collect()\n}\n"
+		},
+		{
+			"id": "max_subarray",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Finds the maximum sum of a contiguous subarray in a given slice of integers.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(max_subarray(&[1, 2, 3, 4]), 10);\n/// assert_eq!(max_subarray(&[-1, -2, -3, -4]), -10);\n/// assert_eq!(max_subarray(&[]), 0);\n/// ```\nfn max_subarray(v: &[i64]) -> i64 {\n    if v.is_empty() {\n        return 0;\n    }\n\n    let mut max_so_far = v[0];\n    let mut max_ending_here = v[0];\n\n    for &num in v.iter().skip(1) {\n        max_ending_here = max(num, max_ending_here + num);\n        max_so_far = max(max_so_far, max_ending_here);\n    }\n\n    max_so_far\n}\n\n// Function to check the correctness of the `max_subarray` function.\nfn check() {\n    assert_eq!(max_subarray(&[1, 2, 3, 4]), 10);\n    assert_eq!(max_subarray(&[-1, -2, -3, -4]), -10);\n    assert_eq!(max_subarray(&[]), 0);\n    println!(\"All tests passed successfully!\");\n}\n",
+					"genMs": 41296,
+					"tokens": 284,
+					"promptTokens": 95
+				},
+				{
+					"what": "autofix",
+					"code": "use std::cmp::max;\n\n/// Finds the maximum sum of a contiguous subarray in a given slice of integers.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(max_subarray(&[1, 2, 3, 4]), 10);\n/// assert_eq!(max_subarray(&[-1, -2, -3, -4]), -10);\n/// assert_eq!(max_subarray(&[]), 0);\n/// ```\nfn max_subarray(v: &[i64]) -> i64 {\n    if v.is_empty() {\n        return 0;\n    }\n\n    let mut max_so_far = v[0];\n    let mut max_ending_here = v[0];\n\n    for &num in v.iter().skip(1) {\n        max_ending_here = max(num, max_ending_here + num);\n        max_so_far = max(max_so_far, max_ending_here);\n    }\n\n    max_so_far\n}\n\n// Function to check the correctness of the `max_subarray` function.\nfn check() {\n    assert_eq!(max_subarray(&[1, 2, 3, 4]), 10);\n    assert_eq!(max_subarray(&[-1, -2, -3, -4]), -10);\n    assert_eq!(max_subarray(&[]), 0);\n    println!(\"All tests passed successfully!\");\n}\n"
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 1,
+			"last": "pass",
+			"code": "use std::cmp::max;\n\n/// Finds the maximum sum of a contiguous subarray in a given slice of integers.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(max_subarray(&[1, 2, 3, 4]), 10);\n/// assert_eq!(max_subarray(&[-1, -2, -3, -4]), -10);\n/// assert_eq!(max_subarray(&[]), 0);\n/// ```\nfn max_subarray(v: &[i64]) -> i64 {\n    if v.is_empty() {\n        return 0;\n    }\n\n    let mut max_so_far = v[0];\n    let mut max_ending_here = v[0];\n\n    for &num in v.iter().skip(1) {\n        max_ending_here = max(num, max_ending_here + num);\n        max_so_far = max(max_so_far, max_ending_here);\n    }\n\n    max_so_far\n}\n\n// Function to check the correctness of the `max_subarray` function.\nfn check() {\n    assert_eq!(max_subarray(&[1, 2, 3, 4]), 10);\n    assert_eq!(max_subarray(&[-1, -2, -3, -4]), -10);\n    assert_eq!(max_subarray(&[]), 0);\n    println!(\"All tests passed successfully!\");\n}\n"
+		},
+		{
+			"id": "binary_search",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Finds the index of a target value in a sorted slice.\n/// Returns the index of the target if found, otherwise None.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(find(&[1, 2, 3, 4, 5], 3), Some(2));\n/// assert_eq!(find(&[1, 2, 3, 4, 5], 6), None);\n/// ```\nfn find(v: &[i32], target: i32) -> Option<usize> {\n    let mut left = 0;\n    let mut right = v.len() - 1;\n\n    while left <= right {\n        let mid = left + (right - left) / 2;\n\n        match v[mid] {\n            target => Some(mid),\n            _ => {\n                if target < v[mid] {\n                    right = mid - 1;\n                } else {\n                    left = mid + 1;\n                }\n            }\n        }\n    }\n\n    None\n}\n\n// A simple check function to verify the correctness of the `find` function.\nfn check() {\n    assert_eq!(find(&[1, 2, 3, 4, 5], 3), Some(2));\n    assert_eq!(find(&[1, 2, 3, 4, 5], 6), None);\n    assert_eq!(find(&[10, 20, 30, 40, 50], 30), Some(2));\n    assert_eq!(find(&[10, 20, 30, 40, 50], 40), Some(3));\n    assert_eq!(find(&[10, 20, 30, 40, 50], 50), Some(4));\n    assert_eq!(find(&[10, 20, 30, 40, 50], 60), None);\n    println!(\"All checks passed!\");\n}\n",
+					"genMs": 59614,
+					"tokens": 425,
+					"promptTokens": 99
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "compile",
+			"code": "/// Finds the index of a target value in a sorted slice.\n/// Returns the index of the target if found, otherwise None.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(find(&[1, 2, 3, 4, 5], 3), Some(2));\n/// assert_eq!(find(&[1, 2, 3, 4, 5], 6), None);\n/// ```\nfn find(v: &[i32], target: i32) -> Option<usize> {\n    let mut left = 0;\n    let mut right = v.len() - 1;\n\n    while left <= right {\n        let mid = left + (right - left) / 2;\n\n        match v[mid] {\n            target => Some(mid),\n            _ => {\n                if target < v[mid] {\n                    right = mid - 1;\n                } else {\n                    left = mid + 1;\n                }\n            }\n        }\n    }\n\n    None\n}\n\n// A simple check function to verify the correctness of the `find` function.\nfn check() {\n    assert_eq!(find(&[1, 2, 3, 4, 5], 3), Some(2));\n    assert_eq!(find(&[1, 2, 3, 4, 5], 6), None);\n    assert_eq!(find(&[10, 20, 30, 40, 50], 30), Some(2));\n    assert_eq!(find(&[10, 20, 30, 40, 50], 40), Some(3));\n    assert_eq!(find(&[10, 20, 30, 40, 50], 50), Some(4));\n    assert_eq!(find(&[10, 20, 30, 40, 50], 60), None);\n    println!(\"All checks passed!\");\n}\n"
+		},
+		{
+			"id": "to_binary",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Converts a number to its binary representation as a string without leading zeros.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(to_binary(0), \"0\");\n/// assert_eq!(to_binary(1), \"1\");\n/// assert_eq!(to_binary(2), \"10\");\n/// assert_eq!(to_binary(3), \"11\");\n/// assert_eq!(to_binary(4), \"100\");\n/// assert_eq!(to_binary(5), \"101\");\n/// assert_eq!(to_binary(6), \"110\");\n/// assert_eq!(to_binary(7), \"111\");\n/// ```\nfn to_binary(n: u32) -> String {\n    if n == 0 {\n        return \"0\".to_string();\n    }\n\n    let mut binary_str = String::new();\n    let mut current_digit = n;\n\n    while current_digit > 0 {\n        binary_str = format!(\"{:b}\", current_digit);\n        current_digit /= 2;\n    }\n\n    binary_str\n}\n\n// Function to check the correctness of the to_binary function\nfn check_to_binary() {\n    assert_eq!(to_binary(0), \"0\");\n    assert_eq!(to_binary(1), \"1\");\n    assert_eq!(to_binary(2), \"10\");\n    assert_eq!(to_binary(3), \"11\");\n    assert_eq!(to_binary(4), \"100\");\n    assert_eq!(to_binary(5), \"101\");\n    assert_eq!(to_binary(6), \"110\");\n    assert_eq!(to_binary(7), \"111\");\n    println!(\"All tests passed successfully!\");\n}\n",
+					"genMs": 46501,
+					"tokens": 347,
+					"promptTokens": 90
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "test",
+			"code": "/// Converts a number to its binary representation as a string without leading zeros.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(to_binary(0), \"0\");\n/// assert_eq!(to_binary(1), \"1\");\n/// assert_eq!(to_binary(2), \"10\");\n/// assert_eq!(to_binary(3), \"11\");\n/// assert_eq!(to_binary(4), \"100\");\n/// assert_eq!(to_binary(5), \"101\");\n/// assert_eq!(to_binary(6), \"110\");\n/// assert_eq!(to_binary(7), \"111\");\n/// ```\nfn to_binary(n: u32) -> String {\n    if n == 0 {\n        return \"0\".to_string();\n    }\n\n    let mut binary_str = String::new();\n    let mut current_digit = n;\n\n    while current_digit > 0 {\n        binary_str = format!(\"{:b}\", current_digit);\n        current_digit /= 2;\n    }\n\n    binary_str\n}\n\n// Function to check the correctness of the to_binary function\nfn check_to_binary() {\n    assert_eq!(to_binary(0), \"0\");\n    assert_eq!(to_binary(1), \"1\");\n    assert_eq!(to_binary(2), \"10\");\n    assert_eq!(to_binary(3), \"11\");\n    assert_eq!(to_binary(4), \"100\");\n    assert_eq!(to_binary(5), \"101\");\n    assert_eq!(to_binary(6), \"110\");\n    assert_eq!(to_binary(7), \"111\");\n    println!(\"All tests passed successfully!\");\n}\n"
+		},
+		{
+			"id": "from_roman",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Converts a Roman numeral to a number.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(from_roman(\"III\"), Some(3));\n/// assert_eq!(from_roman(\"IV\"), Some(4));\n/// assert_eq!(from_roman(\"IX\"), Some(9));\n/// assert_eq!(from_roman(\"LVIII\"), Some(58));\n/// assert_eq!(from_roman(\"XL\"), Some(40));\n/// assert_eq!(from_roman(\"XC\"), Some(90));\n/// assert_eq!(from_roman(\"CD\"), Some(400));\n/// assert_eq!(from_roman(\"CM\"), Some(900));\n/// assert_eq!(from_roman(\"\"), None);\n/// ```\nfn from_roman(s: &str) -> Option<u32> {\n    if s.len() == 0 {\n        return None;\n    }\n\n    let mut value = 0;\n    let mut i = 0;\n\n    while i < s.len() {\n        let current_char = s.chars().nth(i).unwrap();\n\n        match current_char {\n            'I' => {\n                value += 1;\n            }\n            'V' => {\n                value += 5;\n            }\n            'X' => {\n                value += 10;\n            }\n            'L' => {\n                value += 50;\n            }\n            'C' => {\n                value += 100;\n            }\n            'D' => {\n                value += 500;\n            }\n            'M' => {\n                value += 1000;\n            }\n            _ => {\n                return None; // Invalid character\n            }\n        }\n\n        i += 1;\n    }\n\n    Some(value)\n}\n",
+					"genMs": 47503,
+					"tokens": 360,
+					"promptTokens": 110
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "test",
+			"code": "/// Converts a Roman numeral to a number.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(from_roman(\"III\"), Some(3));\n/// assert_eq!(from_roman(\"IV\"), Some(4));\n/// assert_eq!(from_roman(\"IX\"), Some(9));\n/// assert_eq!(from_roman(\"LVIII\"), Some(58));\n/// assert_eq!(from_roman(\"XL\"), Some(40));\n/// assert_eq!(from_roman(\"XC\"), Some(90));\n/// assert_eq!(from_roman(\"CD\"), Some(400));\n/// assert_eq!(from_roman(\"CM\"), Some(900));\n/// assert_eq!(from_roman(\"\"), None);\n/// ```\nfn from_roman(s: &str) -> Option<u32> {\n    if s.len() == 0 {\n        return None;\n    }\n\n    let mut value = 0;\n    let mut i = 0;\n\n    while i < s.len() {\n        let current_char = s.chars().nth(i).unwrap();\n\n        match current_char {\n            'I' => {\n                value += 1;\n            }\n            'V' => {\n                value += 5;\n            }\n            'X' => {\n                value += 10;\n            }\n            'L' => {\n                value += 50;\n            }\n            'C' => {\n                value += 100;\n            }\n            'D' => {\n                value += 500;\n            }\n            'M' => {\n                value += 1000;\n            }\n            _ => {\n                return None; // Invalid character\n            }\n        }\n\n        i += 1;\n    }\n\n    Some(value)\n}\n"
+		},
+		{
+			"id": "caesar",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Encrypts a string by shifting each letter forward by a specified number of positions.\n/// Wraps around the alphabet and maintains case.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(caesar(\"hello\", 5), \"lipps\");\n/// assert_eq!(caesar(\"world\", 10), \"asvph\");\n/// ```\nfn caesar(s: &str, shift: u8) -> String {\n    s.chars()\n        .map(|c| {\n            if c.is_ascii_lowercase() {\n                // Shift lowercase letters\n                ((c as u8 - b'a' + shift) % 26) + b'a'\n            } else if c.is_ascii_uppercase() {\n                // Shift uppercase letters\n                ((c as u8 - b'A' + shift) % 26) + b'A'\n            } else {\n                // Non-alphabetic characters remain unchanged\n                c\n            }\n        })\n        .collect()\n}\n",
+					"genMs": 28883,
+					"tokens": 201,
+					"promptTokens": 99
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "compile",
+			"code": "/// Encrypts a string by shifting each letter forward by a specified number of positions.\n/// Wraps around the alphabet and maintains case.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(caesar(\"hello\", 5), \"lipps\");\n/// assert_eq!(caesar(\"world\", 10), \"asvph\");\n/// ```\nfn caesar(s: &str, shift: u8) -> String {\n    s.chars()\n        .map(|c| {\n            if c.is_ascii_lowercase() {\n                // Shift lowercase letters\n                ((c as u8 - b'a' + shift) % 26) + b'a'\n            } else if c.is_ascii_uppercase() {\n                // Shift uppercase letters\n                ((c as u8 - b'A' + shift) % 26) + b'A'\n            } else {\n                // Non-alphabetic characters remain unchanged\n                c\n            }\n        })\n        .collect()\n}\n"
+		},
+		{
+			"id": "dedup",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Deduplicates consecutive repeated values in a vector.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(dedup(vec![1, 2, 3, 4, 5, 6, 7, 8, 9]), vec![1, 2, 3, 4, 5, 6, 7, 8, 9]);\n/// assert_eq!(dedup(vec![1, 2, 2, 3, 4, 5, 6, 7, 8]), vec![1, 2, 3, 4, 5, 6, 7, 8]);\n/// assert_eq!(dedup(vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);\n/// ```\nfn dedup(v: &[i32]) -> Vec<i32> {\n    let mut result = Vec::new();\n    let mut current = v[0];\n\n    for &num in v.iter().skip(1) {\n        if num != current {\n            result.push(current);\n            current = num;\n        }\n    }\n\n    result.push(current);\n\n    result\n}\n\n// Check function to verify the correctness of the dedup function\nfn check() {\n    assert_eq!(dedup(vec![1, 2, 3, 4, 5, 6, 7, 8, 9]), vec![1, 2, 3, 4, 5, 6, 7, 8, 9]);\n    assert_eq!(dedup(vec![1, 2, 2, 3, 4, 5, 6, 7, 8]), vec![1, 2, 3, 4, 5, 6, 7, 8]);\n    assert_eq!(dedup(vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);\n    println!(\"All tests passed successfully!\");\n}\n",
+					"genMs": 71788,
+					"tokens": 507,
+					"promptTokens": 85
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "compile",
+			"code": "/// Deduplicates consecutive repeated values in a vector.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(dedup(vec![1, 2, 3, 4, 5, 6, 7, 8, 9]), vec![1, 2, 3, 4, 5, 6, 7, 8, 9]);\n/// assert_eq!(dedup(vec![1, 2, 2, 3, 4, 5, 6, 7, 8]), vec![1, 2, 3, 4, 5, 6, 7, 8]);\n/// assert_eq!(dedup(vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);\n/// ```\nfn dedup(v: &[i32]) -> Vec<i32> {\n    let mut result = Vec::new();\n    let mut current = v[0];\n\n    for &num in v.iter().skip(1) {\n        if num != current {\n            result.push(current);\n            current = num;\n        }\n    }\n\n    result.push(current);\n\n    result\n}\n\n// Check function to verify the correctness of the dedup function\nfn check() {\n    assert_eq!(dedup(vec![1, 2, 3, 4, 5, 6, 7, 8, 9]), vec![1, 2, 3, 4, 5, 6, 7, 8, 9]);\n    assert_eq!(dedup(vec![1, 2, 2, 3, 4, 5, 6, 7, 8]), vec![1, 2, 3, 4, 5, 6, 7, 8]);\n    assert_eq!(dedup(vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);\n    println!(\"All tests passed successfully!\");\n}\n"
+		},
+		{
+			"id": "merge_sorted",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Merges two sorted slices into one sorted vector.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(merge_sorted(&[1, 2, 3], &[4, 5]), &[1, 2, 3, 4, 5]);\n/// assert_eq!(merge_sorted(&[5, 4, 3, 2, 1], &[6]), &[1, 2, 3, 4, 5, 6]);\n/// ```\nfn merge_sorted(a: &[i32], b: &[i32]) -> Vec<i32> {\n    let mut merged: Vec<i32> = Vec::new();\n    let mut i = 0;\n    let mut j = 0;\n\n    while i < a.len() && j < b.len() {\n        if a[i] < b[j] {\n            merged.push(a[i]);\n            i += 1;\n        } else {\n            merged.push(b[j]);\n            j += 1;\n        }\n    }\n\n    while i < a.len() {\n        merged.push(a[i]);\n        i += 1;\n    }\n\n    while j < b.len() {\n        merged.push(b[j]);\n        j += 1;\n    }\n\n    merged\n}\n\n// Check function to verify the correctness of the `merge_sorted` function.\nfn check() {\n    assert_eq!(merge_sorted(&[1, 2, 3], &[4, 5]), &[1, 2, 3, 4, 5]);\n    assert_eq!(merge_sorted(&[5, 4, 3, 2, 1], &[6]), &[1, 2, 3, 4, 5, 6]);\n    assert_eq!(merge_sorted(&[], &[1, 2, 3]), &[1, 2, 3]);\n    assert_eq!(merge_sorted(&[1], &[2, 3]), &[1, 2, 3]);\n    println!(\"All tests passed successfully!\");\n}\n",
+					"genMs": 56322,
+					"tokens": 422,
+					"promptTokens": 89
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "/// Merges two sorted slices into one sorted vector.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(merge_sorted(&[1, 2, 3], &[4, 5]), &[1, 2, 3, 4, 5]);\n/// assert_eq!(merge_sorted(&[5, 4, 3, 2, 1], &[6]), &[1, 2, 3, 4, 5, 6]);\n/// ```\nfn merge_sorted(a: &[i32], b: &[i32]) -> Vec<i32> {\n    let mut merged: Vec<i32> = Vec::new();\n    let mut i = 0;\n    let mut j = 0;\n\n    while i < a.len() && j < b.len() {\n        if a[i] < b[j] {\n            merged.push(a[i]);\n            i += 1;\n        } else {\n            merged.push(b[j]);\n            j += 1;\n        }\n    }\n\n    while i < a.len() {\n        merged.push(a[i]);\n        i += 1;\n    }\n\n    while j < b.len() {\n        merged.push(b[j]);\n        j += 1;\n    }\n\n    merged\n}\n\n// Check function to verify the correctness of the `merge_sorted` function.\nfn check() {\n    assert_eq!(merge_sorted(&[1, 2, 3], &[4, 5]), &[1, 2, 3, 4, 5]);\n    assert_eq!(merge_sorted(&[5, 4, 3, 2, 1], &[6]), &[1, 2, 3, 4, 5, 6]);\n    assert_eq!(merge_sorted(&[], &[1, 2, 3]), &[1, 2, 3]);\n    assert_eq!(merge_sorted(&[1], &[2, 3]), &[1, 2, 3]);\n    println!(\"All tests passed successfully!\");\n}\n"
+		},
+		{
+			"id": "capitalize",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "// This Rust library provides a function to capitalize the first letter of each word in a given string.\n// Words are considered to be separated by single spaces.\n// Examples:\n// >>> capitalize_words(String::from(\"hello world\"))\n// String::from(\"Hello World\")\n// >>> capitalize_words(String::from(\"rust programming\"))\n// String::from(\"Rust Programming\")\nfn capitalize_words(s: &str) -> String {\n    s.split_whitespace()\n        .map(|word| {\n            let first_char = word.chars().next().unwrap_or('a');\n            let rest = word.chars().skip(1);\n            format!(\"{}{}\", first_char.to_uppercase(), rest)\n        })\n        .collect()\n}\n",
+					"genMs": 20255,
+					"tokens": 144,
+					"promptTokens": 91
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "compile",
+			"code": "// This Rust library provides a function to capitalize the first letter of each word in a given string.\n// Words are considered to be separated by single spaces.\n// Examples:\n// >>> capitalize_words(String::from(\"hello world\"))\n// String::from(\"Hello World\")\n// >>> capitalize_words(String::from(\"rust programming\"))\n// String::from(\"Rust Programming\")\nfn capitalize_words(s: &str) -> String {\n    s.split_whitespace()\n        .map(|word| {\n            let first_char = word.chars().next().unwrap_or('a');\n            let rest = word.chars().skip(1);\n            format!(\"{}{}\", first_char.to_uppercase(), rest)\n        })\n        .collect()\n}\n"
+		},
+		{
+			"id": "balanced",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Checks if the brackets in a string are balanced.\n/// \n/// # Examples\n/// \n/// ```\n/// assert_eq!(is_balanced(String::from(\"()\")), true);\n/// assert_eq!(is_balanced(String::from(\"[]\")), true);\n/// assert_eq!(is_balanced(String::from(\"{}\")), true);\n/// assert_eq!(is_balanced(String::from(\"(()))\")), false);\n/// assert_eq!(is_balanced(String::from(\"[]()\")), true);\n/// assert_eq!(is_balanced(String::from(\"{}()\")), true);\n/// assert_eq!(is_balanced(String::from(\")(\")), false);\n/// ```\nfn is_balanced(s: &str) -> bool {\n    let mut balance = 0;\n    for c in s.chars() {\n        if c == '(' {\n            balance += 1;\n        } else if c == ')' {\n            balance -= 1;\n        }\n        // If balance goes negative, it means there's a closing bracket before an opening one\n        if balance < 0 {\n            return false;\n        }\n    }\n    // If balance is zero, all brackets are matched correctly\n    balance == 0\n}\n\n// Check function to verify the correctness of the is_balanced function\nfn check() {\n    assert_eq!(is_balanced(String::from(\"()\")), true);\n    assert_eq!(is_balanced(String::from(\"[]\")), true);\n    assert_eq!(is_balanced(String::from(\"{}\")), true);\n    assert_eq!(is_balanced(String::from(\"(()))\")), false);\n    assert_eq!(is_balanced(String::from(\"[]()\")), true);\n    assert_eq!(is_balanced(String::from(\"{}()\")), true);\n    assert_eq!(is_balanced(String::from(\")(\")), false);\n    println!(\"All tests passed successfully!\");\n}\n",
+					"genMs": 46581,
+					"tokens": 374,
+					"promptTokens": 90
+				},
+				{
+					"what": "autofix",
+					"code": "/// Checks if the brackets in a string are balanced.\n/// \n/// # Examples\n/// \n/// ```\n/// assert_eq!(is_balanced(String::from(\"()\")), true);\n/// assert_eq!(is_balanced(String::from(\"[]\")), true);\n/// assert_eq!(is_balanced(String::from(\"{}\")), true);\n/// assert_eq!(is_balanced(String::from(\"(()))\")), false);\n/// assert_eq!(is_balanced(String::from(\"[]()\")), true);\n/// assert_eq!(is_balanced(String::from(\"{}()\")), true);\n/// assert_eq!(is_balanced(String::from(\")(\")), false);\n/// ```\nfn is_balanced(s: &str) -> bool {\n    let mut balance = 0;\n    for c in s.chars() {\n        if c == '(' {\n            balance += 1;\n        } else if c == ')' {\n            balance -= 1;\n        }\n        // If balance goes negative, it means there's a closing bracket before an opening one\n        if balance < 0 {\n            return false;\n        }\n    }\n    // If balance is zero, all brackets are matched correctly\n    balance == 0\n}\n\n// Check function to verify the correctness of the is_balanced function\nfn check() {\n    assert_eq!(is_balanced(&String::from(\"()\")), true);\n    assert_eq!(is_balanced(&String::from(\"[]\")), true);\n    assert_eq!(is_balanced(&String::from(\"{}\")), true);\n    assert_eq!(is_balanced(&String::from(\"(()))\")), false);\n    assert_eq!(is_balanced(&String::from(\"[]()\")), true);\n    assert_eq!(is_balanced(&String::from(\"{}()\")), true);\n    assert_eq!(is_balanced(&String::from(\")(\")), false);\n    println!(\"All tests passed successfully!\");\n}\n"
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 1,
+			"last": "pass",
+			"code": "/// Checks if the brackets in a string are balanced.\n/// \n/// # Examples\n/// \n/// ```\n/// assert_eq!(is_balanced(String::from(\"()\")), true);\n/// assert_eq!(is_balanced(String::from(\"[]\")), true);\n/// assert_eq!(is_balanced(String::from(\"{}\")), true);\n/// assert_eq!(is_balanced(String::from(\"(()))\")), false);\n/// assert_eq!(is_balanced(String::from(\"[]()\")), true);\n/// assert_eq!(is_balanced(String::from(\"{}()\")), true);\n/// assert_eq!(is_balanced(String::from(\")(\")), false);\n/// ```\nfn is_balanced(s: &str) -> bool {\n    let mut balance = 0;\n    for c in s.chars() {\n        if c == '(' {\n            balance += 1;\n        } else if c == ')' {\n            balance -= 1;\n        }\n        // If balance goes negative, it means there's a closing bracket before an opening one\n        if balance < 0 {\n            return false;\n        }\n    }\n    // If balance is zero, all brackets are matched correctly\n    balance == 0\n}\n\n// Check function to verify the correctness of the is_balanced function\nfn check() {\n    assert_eq!(is_balanced(&String::from(\"()\")), true);\n    assert_eq!(is_balanced(&String::from(\"[]\")), true);\n    assert_eq!(is_balanced(&String::from(\"{}\")), true);\n    assert_eq!(is_balanced(&String::from(\"(()))\")), false);\n    assert_eq!(is_balanced(&String::from(\"[]()\")), true);\n    assert_eq!(is_balanced(&String::from(\"{}()\")), true);\n    assert_eq!(is_balanced(&String::from(\")(\")), false);\n    println!(\"All tests passed successfully!\");\n}\n"
+		},
+		{
+			"id": "collatz",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Counts the steps of the Collatz sequence from `n` to 1.\n/// An even number is halved, an odd number becomes 3n + 1.\n/// The function returns the total number of steps.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(collatz_steps(1), 0);\n/// assert_eq!(collatz_steps(5), 5);\n/// assert_eq!(collatz_steps(10), 10);\n/// ```\nfn collatz_steps(n: u64) -> u32 {\n    let mut steps = 0;\n    while n != 1 {\n        if n % 2 == 0 {\n            n /= 2;\n        } else {\n            n = 3 * n + 1;\n        }\n        steps += 1;\n    }\n    steps\n}\n\n// Function to check the correctness of the collatz_steps function\n",
+					"genMs": 27817,
+					"tokens": 187,
+					"promptTokens": 121
+				},
+				{
+					"what": "autofix",
+					"code": "/// Counts the steps of the Collatz sequence from `n` to 1.\n/// An even number is halved, an odd number becomes 3n + 1.\n/// The function returns the total number of steps.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(collatz_steps(1), 0);\n/// assert_eq!(collatz_steps(5), 5);\n/// assert_eq!(collatz_steps(10), 10);\n/// ```\nfn collatz_steps(mut n: u64) -> u32 {\n    let mut steps = 0;\n    while n != 1 {\n        if n % 2 == 0 {\n            n /= 2;\n        } else {\n            n = 3 * n + 1;\n        }\n        steps += 1;\n    }\n    steps\n}\n\n// Function to check the correctness of the collatz_steps function\n"
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 1,
+			"last": "pass",
+			"code": "/// Counts the steps of the Collatz sequence from `n` to 1.\n/// An even number is halved, an odd number becomes 3n + 1.\n/// The function returns the total number of steps.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(collatz_steps(1), 0);\n/// assert_eq!(collatz_steps(5), 5);\n/// assert_eq!(collatz_steps(10), 10);\n/// ```\nfn collatz_steps(mut n: u64) -> u32 {\n    let mut steps = 0;\n    while n != 1 {\n        if n % 2 == 0 {\n            n /= 2;\n        } else {\n            n = 3 * n + 1;\n        }\n        steps += 1;\n    }\n    steps\n}\n\n// Function to check the correctness of the collatz_steps function\n"
+		},
+		{
+			"id": "median",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Calculates the median of a slice of f64 numbers.\n/// If the slice is empty, returns None.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(median(&[3.0, 1.0, 2.0]), Some(2.0));\n/// assert_eq!(median(&[1.0, 2.0, 3.0]), Some(2.5));\n/// assert_eq!(median(&[]), None);\n/// ```\nfn median(v: &[f64]) -> Option<f64> {\n    if v.is_empty() {\n        return None;\n    }\n\n    let mut sorted_v = v.to_vec();\n    sorted_v.sort_unstable();\n\n    let len = sorted_v.len();\n    let mid = len / 2;\n\n    if len % 2 == 0 {\n        Some((sorted_v[mid - 1] + sorted_v[mid]) / 2.0)\n    } else {\n        Some(sorted_v[mid])\n    }\n}\n",
+					"genMs": 29527,
+					"tokens": 206,
+					"promptTokens": 105
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "compile",
+			"code": "/// Calculates the median of a slice of f64 numbers.\n/// If the slice is empty, returns None.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(median(&[3.0, 1.0, 2.0]), Some(2.0));\n/// assert_eq!(median(&[1.0, 2.0, 3.0]), Some(2.5));\n/// assert_eq!(median(&[]), None);\n/// ```\nfn median(v: &[f64]) -> Option<f64> {\n    if v.is_empty() {\n        return None;\n    }\n\n    let mut sorted_v = v.to_vec();\n    sorted_v.sort_unstable();\n\n    let len = sorted_v.len();\n    let mid = len / 2;\n\n    if len % 2 == 0 {\n        Some((sorted_v[mid - 1] + sorted_v[mid]) / 2.0)\n    } else {\n        Some(sorted_v[mid])\n    }\n}\n"
+		},
+		{
+			"id": "transpose",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Transpose a rectangular matrix.\n/// An empty matrix returns an empty matrix.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(transpose(&vec![vec![1, 2], vec![3, 4]]), vec![vec![1, 3], vec![2, 4]]);\n/// assert_eq!(transpose(&vec![vec![5], vec![6]]), vec![vec![5], vec![6]]);\n/// assert_eq!(transpose(&vec![]), Vec::<Vec<i32>>::new());\n/// ```\nfn transpose(m: &[Vec<i32>]) -> Vec<Vec<i32>> {\n    if m.is_empty() {\n        return Vec::<Vec<i32>>::new();\n    }\n\n    let mut transposed = Vec::new();\n    for (col, row) in m.iter().enumerate() {\n        transposed.push(row.into_iter().map(|&val| val).collect());\n    }\n\n    transposed\n}\n",
+					"genMs": 26784,
+					"tokens": 200,
+					"promptTokens": 95
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "test",
+			"code": "/// Transpose a rectangular matrix.\n/// An empty matrix returns an empty matrix.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(transpose(&vec![vec![1, 2], vec![3, 4]]), vec![vec![1, 3], vec![2, 4]]);\n/// assert_eq!(transpose(&vec![vec![5], vec![6]]), vec![vec![5], vec![6]]);\n/// assert_eq!(transpose(&vec![]), Vec::<Vec<i32>>::new());\n/// ```\nfn transpose(m: &[Vec<i32>]) -> Vec<Vec<i32>> {\n    if m.is_empty() {\n        return Vec::<Vec<i32>>::new();\n    }\n\n    let mut transposed = Vec::new();\n    for (col, row) in m.iter().enumerate() {\n        transposed.push(row.into_iter().map(|&val| val).collect());\n    }\n\n    transposed\n}\n"
+		},
+		{
+			"id": "hex_to_rgb",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "// This Rust library provides a function to convert a hexadecimal color to RGB values.\n// The function takes a string representing a color in the format \"#rrggbb\" and returns\n// an Option containing the RGB values as a tuple of u8. If the input is not a valid hex code,\n// it returns None.\n\n/// Converts a hexadecimal color to RGB values.\n/// The function returns None for any invalid input.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(hex_to_rgb(\"#FF0000\"), Some((255, 0, 0)));\n/// assert_eq!(hex_to_rgb(\"#1A3F56\"), Some((255, 165, 85)));\n/// assert_eq!(hex_to_rgb(\"#000000\"), None);\n/// assert_eq!(hex_to_rgb(\"#1A3F5678\"), Some((255, 165, 85)));\n/// ```\nfn hex_to_rgb(s: &str) -> Option<(u8, u8, u8)> {\n    if !s.matches(r\"^#([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$\") {\n        return None;\n    }\n\n    let hex = s.trim();\n    let r = u8::from_str_radix(hex, 16).unwrap();\n    let g = u8::from_str_radix(hex, 16).unwrap();\n    let b = u8::from_str_radix(hex, 16).unwrap();\n\n    Some((r, g, b))\n}\n\n// A check function to verify the correctness of the hex_to_rgb function.\nfn check() {\n    assert_eq!(hex_to_rgb(\"#FF0000\"), Some((255, 0, 0)));\n    assert_eq!(hex_to_rgb(\"#1A3F56\"), Some((255, 165, 85)));\n    assert_eq!(hex_to_rgb(\"#000000\"), None);\n    assert_eq!(hex_to_rgb(\"#1A3F5678\"), Some((255, 165, 85)));\n    println!(\"All tests passed successfully!\");\n}\n",
+					"genMs": 66338,
+					"tokens": 480,
+					"promptTokens": 102
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "compile",
+			"code": "// This Rust library provides a function to convert a hexadecimal color to RGB values.\n// The function takes a string representing a color in the format \"#rrggbb\" and returns\n// an Option containing the RGB values as a tuple of u8. If the input is not a valid hex code,\n// it returns None.\n\n/// Converts a hexadecimal color to RGB values.\n/// The function returns None for any invalid input.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(hex_to_rgb(\"#FF0000\"), Some((255, 0, 0)));\n/// assert_eq!(hex_to_rgb(\"#1A3F56\"), Some((255, 165, 85)));\n/// assert_eq!(hex_to_rgb(\"#000000\"), None);\n/// assert_eq!(hex_to_rgb(\"#1A3F5678\"), Some((255, 165, 85)));\n/// ```\nfn hex_to_rgb(s: &str) -> Option<(u8, u8, u8)> {\n    if !s.matches(r\"^#([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$\") {\n        return None;\n    }\n\n    let hex = s.trim();\n    let r = u8::from_str_radix(hex, 16).unwrap();\n    let g = u8::from_str_radix(hex, 16).unwrap();\n    let b = u8::from_str_radix(hex, 16).unwrap();\n\n    Some((r, g, b))\n}\n\n// A check function to verify the correctness of the hex_to_rgb function.\nfn check() {\n    assert_eq!(hex_to_rgb(\"#FF0000\"), Some((255, 0, 0)));\n    assert_eq!(hex_to_rgb(\"#1A3F56\"), Some((255, 165, 85)));\n    assert_eq!(hex_to_rgb(\"#000000\"), None);\n    assert_eq!(hex_to_rgb(\"#1A3F5678\"), Some((255, 165, 85)));\n    println!(\"All tests passed successfully!\");\n}\n"
+		},
+		{
+			"id": "leap_year",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Checks if a given year is a leap year.\n///\n/// A year is a leap year if it is divisible by 4, except for years that are divisible by 100,\n/// unless they are also divisible by 400.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(is_leap_year(2000), true);\n/// assert_eq!(is_leap_year(1900), false);\n/// assert_eq!(is_leap_year(2024), true);\n/// assert_eq!(is_leap_year(1924), false);\n/// ```\nfn is_leap_year(year: u32) -> bool {\n    if year % 400 == 0 {\n        return true;\n    }\n    if year % 100 == 0 {\n        return false;\n    }\n    year % 4 == 0\n}\n\n// Function to check the correctness of the `is_leap_year` function\nfn check_leap_year() {\n    assert_eq!(is_leap_year(2000), true);\n    assert_eq!(is_leap_year(1900), false);\n    assert_eq!(is_leap_year(2024), true);\n    assert_eq!(is_leap_year(1924), false);\n    println!(\"All tests passed successfully!\");\n}\n",
+					"genMs": 39892,
+					"tokens": 283,
+					"promptTokens": 92
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "/// Checks if a given year is a leap year.\n///\n/// A year is a leap year if it is divisible by 4, except for years that are divisible by 100,\n/// unless they are also divisible by 400.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(is_leap_year(2000), true);\n/// assert_eq!(is_leap_year(1900), false);\n/// assert_eq!(is_leap_year(2024), true);\n/// assert_eq!(is_leap_year(1924), false);\n/// ```\nfn is_leap_year(year: u32) -> bool {\n    if year % 400 == 0 {\n        return true;\n    }\n    if year % 100 == 0 {\n        return false;\n    }\n    year % 4 == 0\n}\n\n// Function to check the correctness of the `is_leap_year` function\nfn check_leap_year() {\n    assert_eq!(is_leap_year(2000), true);\n    assert_eq!(is_leap_year(1900), false);\n    assert_eq!(is_leap_year(2024), true);\n    assert_eq!(is_leap_year(1924), false);\n    println!(\"All tests passed successfully!\");\n}\n"
+		},
+		{
+			"id": "second_largest",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "// Function to find the second largest distinct value in a vector\npub fn second_largest(v: &[i32]) -> Option<i32> {\n    // Use a HashSet to store distinct values\n    let mut unique_values: HashSet<i32> = v.iter().cloned().collect();\n    unique_values.dedup();\n\n    // If there are fewer than two distinct values, return None\n    if unique_values.len() < 2 {\n        None\n    } else {\n        // Return the second largest distinct value\n        Some(unique_values.iter().nth(1).unwrap())\n    }\n}\n",
+					"genMs": 17972,
+					"tokens": 126,
+					"promptTokens": 92
+				},
+				{
+					"what": "autofix",
+					"code": "// Function to find the second largest distinct value in a vector\nuse std::collections::HashSet;\n\npub fn second_largest(v: &[i32]) -> Option<i32> {\n    // Use a HashSet to store distinct values\n    let mut unique_values: HashSet<i32> = v.iter().cloned().collect();\n    unique_values.dedup();\n\n    // If there are fewer than two distinct values, return None\n    if unique_values.len() < 2 {\n        None\n    } else {\n        // Return the second largest distinct value\n        Some(unique_values.iter().nth(1).unwrap())\n    }\n}\n"
+				},
+				{
+					"what": "autofix",
+					"code": "// Function to find the second largest distinct value in a vector\nuse std::collections::HashSet;\n\npub fn second_largest(v: &[i32]) -> Option<i32> {\n    // Use a HashSet to store distinct values\n    let mut unique_values: HashSet<i32> = v.iter().cloned().collect();\n    unique_values.dedup();\n\n    // If there are fewer than two distinct values, return None\n    if unique_values.len() < 2 {\n        None\n    } else {\n        // Return the second largest distinct value\n        Some(*unique_values.iter().nth(1).unwrap())\n    }\n}\n"
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 2,
+			"last": "compile",
+			"code": "// Function to find the second largest distinct value in a vector\nuse std::collections::HashSet;\n\npub fn second_largest(v: &[i32]) -> Option<i32> {\n    // Use a HashSet to store distinct values\n    let mut unique_values: HashSet<i32> = v.iter().cloned().collect();\n    unique_values.dedup();\n\n    // If there are fewer than two distinct values, return None\n    if unique_values.len() < 2 {\n        None\n    } else {\n        // Return the second largest distinct value\n        Some(*unique_values.iter().nth(1).unwrap())\n    }\n}\n"
+		},
+		{
+			"id": "rotate_left",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Rotate a vector `v` to the left by `k` positions.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(rotate_left(&[1, 2, 3], 2), &[3, 1, 2]);\n/// assert_eq!(rotate_left(&[1, 2, 3], 5), &[1, 2, 3]);\n/// assert_eq!(rotate_left(&[], 3), Vec::<i32>::new());\n/// ```\nfn rotate_left(v: &[i32], k: usize) -> Vec<i32> {\n    if v.is_empty() || k == 0 {\n        return v.to_vec();\n    }\n\n    let k = k % v.len(); // Handle cases where k is greater than the length\n\n    let mut rotated = Vec::with_capacity(v.len());\n\n    for i in 0..v.len() {\n        rotated.push(v[(i + k) % v.len()]);\n    }\n\n    rotated\n}\n\n// Function to check the correctness of the rotate_left function\nfn check() {\n    assert_eq!(rotate_left(&[1, 2, 3], 2), &[3, 1, 2]);\n    assert_eq!(rotate_left(&[1, 2, 3], 5), &[1, 2, 3]);\n    assert_eq!(rotate_left(&[], 3), Vec::<i32>::new());\n    assert_eq!(rotate_left(&[4, 5, 6, 7], 2), &[7, 4, 5, 6]);\n    println!(\"All tests passed successfully.\");\n}\n",
+					"genMs": 47568,
+					"tokens": 340,
+					"promptTokens": 102
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "/// Rotate a vector `v` to the left by `k` positions.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(rotate_left(&[1, 2, 3], 2), &[3, 1, 2]);\n/// assert_eq!(rotate_left(&[1, 2, 3], 5), &[1, 2, 3]);\n/// assert_eq!(rotate_left(&[], 3), Vec::<i32>::new());\n/// ```\nfn rotate_left(v: &[i32], k: usize) -> Vec<i32> {\n    if v.is_empty() || k == 0 {\n        return v.to_vec();\n    }\n\n    let k = k % v.len(); // Handle cases where k is greater than the length\n\n    let mut rotated = Vec::with_capacity(v.len());\n\n    for i in 0..v.len() {\n        rotated.push(v[(i + k) % v.len()]);\n    }\n\n    rotated\n}\n\n// Function to check the correctness of the rotate_left function\nfn check() {\n    assert_eq!(rotate_left(&[1, 2, 3], 2), &[3, 1, 2]);\n    assert_eq!(rotate_left(&[1, 2, 3], 5), &[1, 2, 3]);\n    assert_eq!(rotate_left(&[], 3), Vec::<i32>::new());\n    assert_eq!(rotate_left(&[4, 5, 6, 7], 2), &[7, 4, 5, 6]);\n    println!(\"All tests passed successfully.\");\n}\n"
+		},
+		{
+			"id": "remove_vowels",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Removes all vowels from the input string.\n/// \n/// # Examples\n/// \n/// ```\n/// assert_eq!(remove_vowels(String::from(\"rust\")), String::from(\"rs\"));\n/// assert_eq!(remove_vowels(String::from(\"hello\")), String::from(\"hll\"));\n/// assert_eq!(remove_vowels(String::from(\"AEIOU\")), String::from(\"\"));\n/// ```\nfn remove_vowels(s: &str) -> String {\n    s.chars()\n        .filter(|c| !matches!(c, 'a' | 'e' | 'i' | 'o' | 'u'))\n        .collect()\n}\n\n// A simple check function to verify the correctness of the remove_vowels function.\n",
+					"genMs": 20596,
+					"tokens": 153,
+					"promptTokens": 88
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "test",
+			"code": "/// Removes all vowels from the input string.\n/// \n/// # Examples\n/// \n/// ```\n/// assert_eq!(remove_vowels(String::from(\"rust\")), String::from(\"rs\"));\n/// assert_eq!(remove_vowels(String::from(\"hello\")), String::from(\"hll\"));\n/// assert_eq!(remove_vowels(String::from(\"AEIOU\")), String::from(\"\"));\n/// ```\nfn remove_vowels(s: &str) -> String {\n    s.chars()\n        .filter(|c| !matches!(c, 'a' | 'e' | 'i' | 'o' | 'u'))\n        .collect()\n}\n\n// A simple check function to verify the correctness of the remove_vowels function.\n"
+		},
+		{
+			"id": "parse_kv",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::collections::HashMap;\n\n/// Parses a string like \"a=1;b=two\" into a map.\n/// Pairs are separated by \";\" and each pair is \"key=value\".\n/// Pairs without \"=\" are ignored.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(parse_kv(\"a=1;b=two\"), HashMap::from([(\"a\", \"1\"), (\"b\", \"two\")]));\n/// assert_eq!(parse_kv(\"key=value;key2=value3\"), HashMap::from([(\"key\", \"value\"), (\"key2\", \"value3\")]));\n/// ```\nfn parse_kv(s: &str) -> HashMap<String, String> {\n    s.split(';')\n        .map(|pair| {\n            let parts: Vec<&str> = pair.split('=').collect();\n            if parts.len() == 2 {\n                (parts[0], parts[1])\n            } else {\n                (String::from(parts[0]), String::from(parts[1]))\n            }\n        })\n        .collect()\n}\n\n// Example usage\n",
+					"genMs": 32855,
+					"tokens": 218,
+					"promptTokens": 111
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "compile",
+			"code": "use std::collections::HashMap;\n\n/// Parses a string like \"a=1;b=two\" into a map.\n/// Pairs are separated by \";\" and each pair is \"key=value\".\n/// Pairs without \"=\" are ignored.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(parse_kv(\"a=1;b=two\"), HashMap::from([(\"a\", \"1\"), (\"b\", \"two\")]));\n/// assert_eq!(parse_kv(\"key=value;key2=value3\"), HashMap::from([(\"key\", \"value\"), (\"key2\", \"value3\")]));\n/// ```\nfn parse_kv(s: &str) -> HashMap<String, String> {\n    s.split(';')\n        .map(|pair| {\n            let parts: Vec<&str> = pair.split('=').collect();\n            if parts.len() == 2 {\n                (parts[0], parts[1])\n            } else {\n                (String::from(parts[0]), String::from(parts[1]))\n            }\n        })\n        .collect()\n}\n\n// Example usage\n"
+		},
+		{
+			"id": "running_sum",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Calculates the running sum of a vector of integers.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(running_sum(vec![1, 2, 3]), vec![1, 3, 6]);\n/// assert_eq!(running_sum(vec![4, 5, 6]), vec![4, 9, 15]);\n/// ```\nfn running_sum(v: &[i32]) -> Vec<i32> {\n    v.iter().enumerate().map(|(i, &x)| x + v[0..i]).collect()\n}\n",
+					"genMs": 16337,
+					"tokens": 118,
+					"promptTokens": 90
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "compile",
+			"code": "/// Calculates the running sum of a vector of integers.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(running_sum(vec![1, 2, 3]), vec![1, 3, 6]);\n/// assert_eq!(running_sum(vec![4, 5, 6]), vec![4, 9, 15]);\n/// ```\nfn running_sum(v: &[i32]) -> Vec<i32> {\n    v.iter().enumerate().map(|(i, &x)| x + v[0..i]).collect()\n}\n"
+		},
+		{
+			"id": "count_char",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Counts the number of times a character appears in a string.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(count_char(\"hello\", 'l'), 2);\n/// assert_eq!(count_char(\"world\", 'o'), 2);\n/// assert_eq!(count_char(\"rust\", 'r'), 1);\n/// ```\nfn count_char(s: &str, c: char) -> usize {\n    s.chars().filter(|&x| x == c).count()\n}\n\n// Function to check the correctness of the count_char function\nfn check() {\n    assert_eq!(count_char(\"hello\", 'l'), 2);\n    assert_eq!(count_char(\"world\", 'o'), 2);\n    assert_eq!(count_char(\"rust\", 'r'), 1);\n    assert_eq!(count_char(\"rust\", 't'), 0);\n    println!(\"All tests passed successfully.\");\n}\n",
+					"genMs": 23922,
+					"tokens": 186,
+					"promptTokens": 83
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "/// Counts the number of times a character appears in a string.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(count_char(\"hello\", 'l'), 2);\n/// assert_eq!(count_char(\"world\", 'o'), 2);\n/// assert_eq!(count_char(\"rust\", 'r'), 1);\n/// ```\nfn count_char(s: &str, c: char) -> usize {\n    s.chars().filter(|&x| x == c).count()\n}\n\n// Function to check the correctness of the count_char function\nfn check() {\n    assert_eq!(count_char(\"hello\", 'l'), 2);\n    assert_eq!(count_char(\"world\", 'o'), 2);\n    assert_eq!(count_char(\"rust\", 'r'), 1);\n    assert_eq!(count_char(\"rust\", 't'), 0);\n    println!(\"All tests passed successfully.\");\n}\n"
+		},
+		{
+			"id": "gradient",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 0; // Black\n            pixels[i + 1] = 255; // Red\n            pixels[i + 2] = 0; // Green\n            pixels[i + 3] = 0; // Blue\n        }\n    }\n    pixels.as_ptr()\n}\n\n// Main function to run the tile program.\n",
+					"genMs": 30668,
+					"tokens": 76,
+					"promptTokens": 405
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "wrong",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 0; // Black\n            pixels[i + 1] = 255; // Red\n            pixels[i + 2] = 0; // Green\n            pixels[i + 3] = 0; // Blue\n        }\n    }\n    pixels.as_ptr()\n}\n\n// Main function to run the tile program.\n"
+		},
+		{
+			"id": "checker",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 255; // Black\n            pixels[i + 1] = 0;  // White\n            pixels[i + 2] = 0;  // White\n            pixels[i + 3] = 255; // Black\n        }\n    }\n    pixels.as_ptr()\n}\n",
+					"genMs": 32850,
+					"tokens": 71,
+					"promptTokens": 402
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "wrong",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 255; // Black\n            pixels[i + 1] = 0;  // White\n            pixels[i + 2] = 0;  // White\n            pixels[i + 3] = 255; // Black\n        }\n    }\n    pixels.as_ptr()\n}\n"
+		},
+		{
+			"id": "solid",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 0;\n            pixels[i + 1] = 0;\n            pixels[i + 2] = 0;\n            pixels[i + 3] = 255;\n        }\n    }\n    pixels.as_ptr()\n}\n",
+					"genMs": 33015,
+					"tokens": 55,
+					"promptTokens": 398
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "wrong",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 0;\n            pixels[i + 1] = 0;\n            pixels[i + 2] = 0;\n            pixels[i + 3] = 255;\n        }\n    }\n    pixels.as_ptr()\n}\n"
+		},
+		{
+			"id": "stripes",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 255; // Red\n            pixels[i + 1] = 0; // White\n            pixels[i + 2] = 0; // White\n            pixels[i + 3] = 0; // White\n        }\n    }\n    pixels.as_ptr()\n}\n\n// Example usage:\n",
+					"genMs": 33743,
+					"tokens": 71,
+					"promptTokens": 397
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "wrong",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 255; // Red\n            pixels[i + 1] = 0; // White\n            pixels[i + 2] = 0; // White\n            pixels[i + 3] = 0; // White\n        }\n    }\n    pixels.as_ptr()\n}\n\n// Example usage:\n"
+		},
+		{
+			"id": "halves",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 0; // Blue\n            pixels[i + 1] = 255; // Yellow\n            pixels[i + 2] = 0; // Red\n            pixels[i + 3] = 255; // Green\n        }\n    }\n    pixels.as_ptr()\n}\n",
+					"genMs": 38665,
+					"tokens": 69,
+					"promptTokens": 413
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "wrong",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 0; // Blue\n            pixels[i + 1] = 255; // Yellow\n            pixels[i + 2] = 0; // Red\n            pixels[i + 3] = 255; // Green\n        }\n    }\n    pixels.as_ptr()\n}\n"
+		},
+		{
+			"id": "border",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 0; // White\n            pixels[i + 1] = 0; // White\n            pixels[i + 2] = 0; // White\n            pixels[i + 3] = 255; // Black\n        }\n    }\n    pixels.as_ptr()\n}\n",
+					"genMs": 32552,
+					"tokens": 67,
+					"promptTokens": 396
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "wrong",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 0; // White\n            pixels[i + 1] = 0; // White\n            pixels[i + 2] = 0; // White\n            pixels[i + 3] = 255; // Black\n        }\n    }\n    pixels.as_ptr()\n}\n"
+		},
+		{
+			"id": "diagonal",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 255; // White\n            pixels[i + 1] = 255; // White\n            pixels[i + 2] = 255; // White\n            pixels[i + 3] = 255; // White\n        }\n    }\n    pixels.as_ptr()\n}\n\n// Main function to run the tile program.\n",
+					"genMs": 35068,
+					"tokens": 82,
+					"promptTokens": 397
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "wrong",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 255; // White\n            pixels[i + 1] = 255; // White\n            pixels[i + 2] = 255; // White\n            pixels[i + 3] = 255; // White\n        }\n    }\n    pixels.as_ptr()\n}\n\n// Main function to run the tile program.\n"
+		},
+		{
+			"id": "circle",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 0; // Red\n            pixels[i + 1] = 0; // Green\n            pixels[i + 2] = 0; // Blue\n            pixels[i + 3] = 255; // Alpha\n        }\n    }\n    pixels.as_ptr()\n}\n\n// Main function to run the tile program.\n",
+					"genMs": 34262,
+					"tokens": 76,
+					"promptTokens": 405
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "wrong",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 0; // Red\n            pixels[i + 1] = 0; // Green\n            pixels[i + 2] = 0; // Blue\n            pixels[i + 3] = 255; // Alpha\n        }\n    }\n    pixels.as_ptr()\n}\n\n// Main function to run the tile program.\n"
+		},
+		{
+			"id": "clock",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 0; // Red\n            pixels[i + 1] = 0; // Green\n            pixels[i + 2] = 0; // Blue\n            pixels[i + 3] = 255; // Gray\n        }\n    }\n    pixels.as_ptr()\n}\n",
+					"genMs": 30398,
+					"tokens": 67,
+					"promptTokens": 405
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "wrong",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 0; // Red\n            pixels[i + 1] = 0; // Green\n            pixels[i + 2] = 0; // Blue\n            pixels[i + 3] = 255; // Gray\n        }\n    }\n    pixels.as_ptr()\n}\n"
+		}
+	]
+}
