@@ -1,0 +1,62 @@
+{
+	"base": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+	"rank": 8,
+	"lr": 5e-05,
+	"epochs": 1,
+	"trainable": 4399104,
+	"examples": 426,
+	"heldSeeds": [
+		"chunks_of",
+		"index_of",
+		"pangram",
+		"swap_case",
+		"tally"
+	],
+	"heldExamples": 24,
+	"threads": 4,
+	"steps": [
+		{
+			"step": 1,
+			"loss": 0.5374,
+			"seconds": 3
+		},
+		{
+			"step": 20,
+			"loss": 0.2463,
+			"seconds": 131
+		},
+		{
+			"step": 40,
+			"loss": 0.1382,
+			"seconds": 232
+		},
+		{
+			"step": 60,
+			"loss": 0.1039,
+			"seconds": 331
+		},
+		{
+			"step": 80,
+			"loss": 0.1022,
+			"seconds": 421
+		},
+		{
+			"step": 100,
+			"loss": 0.0851,
+			"seconds": 531
+		},
+		{
+			"step": 120,
+			"loss": 0.0586,
+			"seconds": 634
+		},
+		{
+			"step": 140,
+			"loss": 0.0635,
+			"seconds": 741
+		}
+	],
+	"heldBefore": 0.11326888808980584,
+	"heldAfter": 0.04302144592414455,
+	"seconds": 777
+}
