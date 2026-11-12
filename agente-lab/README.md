@@ -65,8 +65,14 @@ inferência é o [wllama](https://github.com/ngxson/wllama) (MIT).
 
 ## Dados de treino por mutação (`data/`)
 
+**Programas de fora.** `node data/import.mjs --exercism <clone> --algorithms <clone>` traz programas com
+testes do Exercism (trilha de Rust) e do TheAlgorithms/Rust, os dois MIT (`NOTICE.md`): só biblioteca
+padrão, até 60 linhas, API pública pequena, e nada que seja uma tarefa da medição com outro nome. O
+compilador prova cada um antes de usar; os que não passam ficam de fora (`seedsFailing` no resumo).
+
 `npm run data` gera pares de erro e correção sem modelo nenhum: parte de programas corretos
-(`data/seeds.mjs`, 54 sementes: 44 de função com teste e 10 de tile), quebra cada um num lugar por vez
+(`data/seeds.mjs`: 96 nossas, 70 de função com teste e 26 de tile, mais as de fora em
+`data/imported.mjs`, ver abaixo), quebra cada um num lugar por vez
 (`data/mutate.mjs`, 33 operadores: um `mut` que falta, um tipo trocado, um método que não existe em
 Rust, uma comparação invertida…) e passa cada mutante pelo compilador de verdade, o mesmo da página.
 

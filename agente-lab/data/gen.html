@@ -37,7 +37,7 @@ const applyFixes = (source, diags, kinds) => { const enc = new TextEncoder(); co
   if (!kept.length) return null; const parts = []; let at = 0; for (const f of kept) { parts.push(bytes.subarray(at, f.start), enc.encode(f.replacement)); at = f.end; } parts.push(bytes.subarray(at));
   const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0)); let o = 0; for (const p of parts) { out.set(p, o); o += p.length; } return new TextDecoder().decode(out); };
 
-const withTests = (seed, code) => seed.kind === 'fn' ? code + `\n#[cfg(test)]\nmod hidden_tests {\n    use super::*;\n    #[test]\n    fn hidden() { ${seed.tests} }\n}\n` : code;
+const withTests = (seed, code) => seed.testsModule ? code + '\n' + seed.testsModule : seed.kind === 'fn' ? code + `\n#[cfg(test)]\nmod hidden_tests {\n    use super::*;\n    #[test]\n    fn hidden() { ${seed.tests} }\n}\n` : code;
 const judge = async (seed, code) => {
   const r = await compile(seed.kind === 'fn' ? 'test' : 'build', withTests(seed, code));
   if (r.crashed) return { stage: 'crash', out: r.out };

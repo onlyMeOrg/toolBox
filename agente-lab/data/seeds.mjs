@@ -3,6 +3,7 @@
 // (../tasks.mjs): gen.mjs refuses to run if a function name here also appears there.
 // kind "fn": `tests` is appended as a #[test]. kind "tile": `body` goes inside the pixel loop.
 import { TILE_HEAD } from '../tasks.mjs';
+import { IMPORTED } from './imported.mjs';
 
 const R = String.raw;
 const fn = (id, ask, tests, code) => ({ id, kind: 'fn', ask, tests, code: code.replace(/^\n/, '') });
@@ -13,7 +14,7 @@ const TILE_TAIL = `        }
 `;
 const tile = (id, ask, body) => ({ id, kind: 'tile', ask, code: TILE_HEAD + body.replace(/^\n/, '') + TILE_TAIL });
 
-export const SEEDS = [
+const OWN = [
 	fn('count_evens', 'Write `pub fn count_evens(values: &[i32]) -> usize` that returns how many of the values are even.',
 		'assert_eq!(count_evens(&[]), 0); assert_eq!(count_evens(&[1, 2, 3, 4, -6]), 3); assert_eq!(count_evens(&[7, 9]), 0);', R`
 pub fn count_evens(values: &[i32]) -> usize {
@@ -810,4 +811,465 @@ impl Account {
             }
             pixels[i + 3] = 255;
 `),
+
+	// ---- what the site builds: pixels, sound, bytes for WebAssembly (second batch, 2026-11-12)
+	fn('pack_rgba', 'Write `pub fn pack_rgba(r: u8, g: u8, b: u8, a: u8) -> u32` and `pub fn unpack_rgba(color: u32) -> (u8, u8, u8, u8)`. The packed value has r in the lowest byte, then g, b, and a in the highest byte (the order of bytes in a canvas, read as little-endian).',
+		'assert_eq!(pack_rgba(1, 2, 3, 4), 0x04030201); assert_eq!(unpack_rgba(0x04030201), (1, 2, 3, 4)); assert_eq!(unpack_rgba(pack_rgba(255, 0, 128, 255)), (255, 0, 128, 255)); assert_eq!(pack_rgba(0, 0, 0, 255), 0xff000000);', R`
+pub fn pack_rgba(r: u8, g: u8, b: u8, a: u8) -> u32 {
+    (r as u32) | (g as u32) << 8 | (b as u32) << 16 | (a as u32) << 24
+}
+
+pub fn unpack_rgba(color: u32) -> (u8, u8, u8, u8) {
+    (color as u8, (color >> 8) as u8, (color >> 16) as u8, (color >> 24) as u8)
+}
+`),
+	fn('lerp_u8', 'Write `pub fn lerp_u8(a: u8, b: u8, t: u8) -> u8` that mixes a and b: t = 0 gives a, t = 255 gives b, linearly in between, rounding to the nearest. Use integers only.',
+		'assert_eq!(lerp_u8(10, 200, 0), 10); assert_eq!(lerp_u8(10, 200, 255), 200); assert_eq!(lerp_u8(0, 255, 128), 128); assert_eq!(lerp_u8(200, 100, 51), 180); assert_eq!(lerp_u8(7, 7, 99), 7);', R`
+pub fn lerp_u8(a: u8, b: u8, t: u8) -> u8 {
+    let a = a as u32;
+    let b = b as u32;
+    let t = t as u32;
+    ((a * (255 - t) + b * t + 127) / 255) as u8
+}
+`),
+	fn('blend_over', 'Write `pub fn blend_over(dst: [u8; 4], src: [u8; 4]) -> [u8; 4]` that draws the RGBA colour src over the opaque colour dst: each of r, g, b is (src * alpha + dst * (255 - alpha)) / 255 with the alpha of src, and the result is opaque (alpha 255).',
+		'assert_eq!(blend_over([10, 20, 30, 255], [200, 100, 50, 255]), [200, 100, 50, 255]); assert_eq!(blend_over([10, 20, 30, 255], [200, 100, 50, 0]), [10, 20, 30, 255]); assert_eq!(blend_over([0, 0, 0, 255], [255, 255, 255, 51]), [51, 51, 51, 255]); assert_eq!(blend_over([255, 0, 0, 255], [0, 0, 255, 102]), [153, 0, 102, 255]);', R`
+pub fn blend_over(dst: [u8; 4], src: [u8; 4]) -> [u8; 4] {
+    let alpha = src[3] as u32;
+    let mut out = [255u8; 4];
+    for c in 0..3 {
+        out[c] = ((src[c] as u32 * alpha + dst[c] as u32 * (255 - alpha)) / 255) as u8;
+    }
+    out
+}
+`),
+	fn('xorshift', 'Write `pub fn xorshift32(state: &mut u32) -> u32`: one step of the xorshift generator. Update the state with x ^= x << 13, x ^= x >> 17, x ^= x << 5 and return the new state.',
+		'let mut s = 1u32; assert_eq!(xorshift32(&mut s), 270369); assert_eq!(s, 270369); assert_eq!(xorshift32(&mut s), 67634689); let mut t = 2463534242u32; assert_eq!(xorshift32(&mut t), 723471715);', R`
+pub fn xorshift32(state: &mut u32) -> u32 {
+    let mut x = *state;
+    x ^= x << 13;
+    x ^= x >> 17;
+    x ^= x << 5;
+    *state = x;
+    x
+}
+`),
+	fn('to_pcm16', 'Write `pub fn to_pcm16(samples: &[f32]) -> Vec<i16>` that converts audio samples from the range -1.0..=1.0 to 16-bit integers: clamp each sample to that range, multiply by 32767 and round.',
+		'assert_eq!(to_pcm16(&[0.0, 1.0, -1.0, 0.5]), vec![0, 32767, -32767, 16384]); assert_eq!(to_pcm16(&[2.0, -3.5]), vec![32767, -32767]); assert_eq!(to_pcm16(&[]), Vec::<i16>::new());', R`
+pub fn to_pcm16(samples: &[f32]) -> Vec<i16> {
+    samples
+        .iter()
+        .map(|s| (s.clamp(-1.0, 1.0) * 32767.0).round() as i16)
+        .collect()
+}
+`),
+	fn('rms', 'Write `pub fn rms(samples: &[f32]) -> f32` that returns the root mean square of the samples (the square root of the mean of the squares). An empty slice gives 0.0.',
+		'assert_eq!(rms(&[]), 0.0); assert!((rms(&[1.0, -1.0, 1.0, -1.0]) - 1.0).abs() < 1e-6); assert!((rms(&[3.0, 4.0]) - 3.5355339).abs() < 1e-5); assert_eq!(rms(&[0.0, 0.0]), 0.0);', R`
+pub fn rms(samples: &[f32]) -> f32 {
+    if samples.is_empty() {
+        return 0.0;
+    }
+    let sum: f32 = samples.iter().map(|s| s * s).sum();
+    (sum / samples.len() as f32).sqrt()
+}
+`),
+	fn('one_pole', 'Write `pub fn smooth(samples: &[f32], amount: f32) -> Vec<f32>`: a one-pole low-pass filter. Keep a state y that starts at 0.0; for each sample x, y = y + amount * (x - y), and y is the output.',
+		'assert_eq!(smooth(&[1.0, 1.0, 1.0], 0.5), vec![0.5, 0.75, 0.875]); assert_eq!(smooth(&[4.0, 0.0], 1.0), vec![4.0, 0.0]); assert_eq!(smooth(&[8.0, 8.0], 0.25), vec![2.0, 3.5]); assert!(smooth(&[], 0.5).is_empty());', R`
+pub fn smooth(samples: &[f32], amount: f32) -> Vec<f32> {
+    let mut y = 0.0f32;
+    let mut out = Vec::with_capacity(samples.len());
+    for &x in samples {
+        y += amount * (x - y);
+        out.push(y);
+    }
+    out
+}
+`),
+	fn('zero_crossings', 'Write `pub fn zero_crossings(samples: &[f32]) -> usize` that counts how many times the signal changes sign between one sample and the next. Treat 0.0 as positive.',
+		'assert_eq!(zero_crossings(&[1.0, -1.0, 1.0, -1.0]), 3); assert_eq!(zero_crossings(&[1.0, 2.0, 0.0, 3.0]), 0); assert_eq!(zero_crossings(&[-1.0, -2.0, 0.5]), 1); assert_eq!(zero_crossings(&[]), 0); assert_eq!(zero_crossings(&[0.3]), 0);', R`
+pub fn zero_crossings(samples: &[f32]) -> usize {
+    samples
+        .windows(2)
+        .filter(|pair| (pair[0] >= 0.0) != (pair[1] >= 0.0))
+        .count()
+}
+`),
+	fn('ring_buffer', 'Write a fixed-size ring buffer of audio samples: `pub struct Ring` with `pub fn new(capacity: usize) -> Self`, `pub fn push(&mut self, sample: f32)` (when full, the oldest sample is overwritten) and `pub fn to_vec(&self) -> Vec<f32>` that returns the samples it holds from the oldest to the newest.',
+		'let mut r = Ring::new(3); assert!(r.to_vec().is_empty()); r.push(1.0); r.push(2.0); assert_eq!(r.to_vec(), vec![1.0, 2.0]); r.push(3.0); r.push(4.0); assert_eq!(r.to_vec(), vec![2.0, 3.0, 4.0]); r.push(5.0); r.push(6.0); r.push(7.0); assert_eq!(r.to_vec(), vec![5.0, 6.0, 7.0]);', R`
+pub struct Ring {
+    data: Vec<f32>,
+    next: usize,
+    filled: usize,
+}
+
+impl Ring {
+    pub fn new(capacity: usize) -> Self {
+        Ring { data: vec![0.0; capacity], next: 0, filled: 0 }
+    }
+
+    pub fn push(&mut self, sample: f32) {
+        self.data[self.next] = sample;
+        self.next = (self.next + 1) % self.data.len();
+        if self.filled < self.data.len() {
+            self.filled += 1;
+        }
+    }
+
+    pub fn to_vec(&self) -> Vec<f32> {
+        let start = (self.next + self.data.len() - self.filled) % self.data.len();
+        (0..self.filled).map(|k| self.data[(start + k) % self.data.len()]).collect()
+    }
+}
+`),
+	fn('life_step', 'Write `pub fn life_step(cells: &[u8], width: usize, height: usize) -> Vec<u8>`: one generation of the Game of Life. `cells` has one byte per cell, row by row (1 alive, 0 dead). Cells outside the grid are dead. A live cell with 2 or 3 live neighbours stays alive; a dead cell with exactly 3 becomes alive.',
+		'let blinker = [0, 1, 0, 0, 1, 0, 0, 1, 0]; assert_eq!(life_step(&blinker, 3, 3), vec![0, 0, 0, 1, 1, 1, 0, 0, 0]); let block = [1, 1, 1, 1]; assert_eq!(life_step(&block, 2, 2), vec![1, 1, 1, 1]); assert_eq!(life_step(&[1, 0, 0, 0], 2, 2), vec![0, 0, 0, 0]);', R`
+pub fn life_step(cells: &[u8], width: usize, height: usize) -> Vec<u8> {
+    let mut next = vec![0u8; cells.len()];
+    for y in 0..height {
+        for x in 0..width {
+            let mut around = 0;
+            for dy in -1i32..=1 {
+                for dx in -1i32..=1 {
+                    let nx = x as i32 + dx;
+                    let ny = y as i32 + dy;
+                    if (dx != 0 || dy != 0) && nx >= 0 && ny >= 0 && (nx as usize) < width && (ny as usize) < height {
+                        around += cells[ny as usize * width + nx as usize];
+                    }
+                }
+            }
+            let alive = cells[y * width + x] == 1;
+            next[y * width + x] = (around == 3 || (alive && around == 2)) as u8;
+        }
+    }
+    next
+}
+`),
+	fn('fx_mul', 'Write `pub fn fx_mul(a: i32, b: i32) -> i32` that multiplies two fixed-point numbers in 16.16 format (the value is the integer divided by 65536). Use a 64-bit intermediate so it does not overflow.',
+		'assert_eq!(fx_mul(65536, 65536), 65536); assert_eq!(fx_mul(2 * 65536, 3 * 65536), 6 * 65536); assert_eq!(fx_mul(32768, 32768), 16384); assert_eq!(fx_mul(-65536, 5 * 65536), -5 * 65536); assert_eq!(fx_mul(1000 * 65536, 30 * 65536), 30000 * 65536);', R`
+pub fn fx_mul(a: i32, b: i32) -> i32 {
+    ((a as i64 * b as i64) >> 16) as i32
+}
+`),
+	fn('u32_le', 'Write `pub fn write_u32_le(buf: &mut [u8], at: usize, value: u32) -> bool` that stores value as 4 little-endian bytes starting at index `at` and returns true, or returns false without writing when it does not fit; and `pub fn read_u32_le(buf: &[u8], at: usize) -> Option<u32>` that reads it back.',
+		'let mut b = [0u8; 6]; assert!(write_u32_le(&mut b, 1, 0x11223344)); assert_eq!(b, [0, 0x44, 0x33, 0x22, 0x11, 0]); assert_eq!(read_u32_le(&b, 1), Some(0x11223344)); assert!(!write_u32_le(&mut b, 3, 1)); assert_eq!(read_u32_le(&b, 3), None); assert_eq!(read_u32_le(&b, 2), Some(0x00112233));', R`
+pub fn write_u32_le(buf: &mut [u8], at: usize, value: u32) -> bool {
+    if at + 4 > buf.len() {
+        return false;
+    }
+    buf[at..at + 4].copy_from_slice(&value.to_le_bytes());
+    true
+}
+
+pub fn read_u32_le(buf: &[u8], at: usize) -> Option<u32> {
+    let bytes = buf.get(at..at + 4)?;
+    Some(u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]))
+}
+`),
+	fn('leb128', 'Write `pub fn leb128(value: u32) -> Vec<u8>` that encodes an unsigned integer as LEB128, the format WebAssembly uses for numbers: 7 bits per byte from the lowest, with the high bit set on every byte except the last; and `pub fn leb128_read(bytes: &[u8]) -> Option<(u32, usize)>` that decodes one and returns the value and how many bytes it used, or None when the input ends too soon.',
+		'assert_eq!(leb128(0), vec![0]); assert_eq!(leb128(127), vec![127]); assert_eq!(leb128(128), vec![0x80, 1]); assert_eq!(leb128(624485), vec![0xe5, 0x8e, 0x26]); assert_eq!(leb128_read(&[0xe5, 0x8e, 0x26, 9]), Some((624485, 3))); assert_eq!(leb128_read(&[0x80]), None); assert_eq!(leb128_read(&leb128(u32::MAX)), Some((u32::MAX, 5)));', R`
+pub fn leb128(value: u32) -> Vec<u8> {
+    let mut left = value;
+    let mut out = Vec::new();
+    loop {
+        let byte = (left & 0x7f) as u8;
+        left >>= 7;
+        if left == 0 {
+            out.push(byte);
+            return out;
+        }
+        out.push(byte | 0x80);
+    }
+}
+
+pub fn leb128_read(bytes: &[u8]) -> Option<(u32, usize)> {
+    let mut value = 0u32;
+    for (n, &byte) in bytes.iter().enumerate().take(5) {
+        value |= ((byte & 0x7f) as u32) << (7 * n);
+        if byte & 0x80 == 0 {
+            return Some((value, n + 1));
+        }
+    }
+    None
+}
+`),
+	fn('is_wasm', 'Write `pub fn wasm_version(bytes: &[u8]) -> Option<u32>` that checks the header of a WebAssembly module: the first four bytes must be 0x00 0x61 0x73 0x6d ("\\0asm"), and the next four are the version as a little-endian u32, which is returned. Anything else gives None.',
+		'assert_eq!(wasm_version(&[0, 0x61, 0x73, 0x6d, 1, 0, 0, 0]), Some(1)); assert_eq!(wasm_version(&[0, 0x61, 0x73, 0x6d, 13, 0, 0, 0, 7, 7]), Some(13)); assert_eq!(wasm_version(&[0, 0x61, 0x73, 0x6d, 1, 0]), None); assert_eq!(wasm_version(&[1, 0x61, 0x73, 0x6d, 1, 0, 0, 0]), None); assert_eq!(wasm_version(&[]), None);', R`
+pub fn wasm_version(bytes: &[u8]) -> Option<u32> {
+    if bytes.len() < 8 || bytes[..4] != [0, 0x61, 0x73, 0x6d] {
+        return None;
+    }
+    Some(u32::from_le_bytes([bytes[4], bytes[5], bytes[6], bytes[7]]))
+}
+`),
+	fn('frames_per_beat', 'Write `pub fn frames_per_beat(bpm: u32, sample_rate: u32) -> u32` that returns how many audio frames one beat lasts, rounded to the nearest. A bpm of 0 gives 0.',
+		'assert_eq!(frames_per_beat(120, 48000), 24000); assert_eq!(frames_per_beat(60, 44100), 44100); assert_eq!(frames_per_beat(90, 44100), 29400); assert_eq!(frames_per_beat(7, 48000), 411429); assert_eq!(frames_per_beat(0, 48000), 0);', R`
+pub fn frames_per_beat(bpm: u32, sample_rate: u32) -> u32 {
+    if bpm == 0 {
+        return 0;
+    }
+    ((sample_rate as u64 * 60 + bpm as u64 / 2) / bpm as u64) as u32
+}
+`),
+	fn('midi_hz', 'Write `pub fn midi_to_hz(note: u8) -> f64` that returns the frequency of a MIDI note in equal temperament, where note 69 is 440 Hz and each semitone multiplies the frequency by the twelfth root of 2.',
+		'assert!((midi_to_hz(69) - 440.0).abs() < 1e-9); assert!((midi_to_hz(81) - 880.0).abs() < 1e-9); assert!((midi_to_hz(60) - 261.6255653).abs() < 1e-6); assert!((midi_to_hz(40) - 82.4068892).abs() < 1e-6);', R`
+pub fn midi_to_hz(note: u8) -> f64 {
+    440.0 * 2f64.powf((note as f64 - 69.0) / 12.0)
+}
+`),
+	fn('to_gray', 'Write `pub fn to_gray(pixels: &mut [u8])` that turns RGBA pixels (4 bytes each) to gray in place: r, g and b all become (r * 77 + g * 150 + b * 29) / 256, and alpha is kept.',
+		'let mut p = [255, 255, 255, 200, 255, 0, 0, 255, 0, 0, 0, 9]; to_gray(&mut p); assert_eq!(p, [255, 255, 255, 200, 76, 76, 76, 255, 0, 0, 0, 9]); let mut q = [0, 255, 0, 1, 0, 0, 255, 2]; to_gray(&mut q); assert_eq!(q, [149, 149, 149, 1, 28, 28, 28, 2]);', R`
+pub fn to_gray(pixels: &mut [u8]) {
+    for pixel in pixels.chunks_exact_mut(4) {
+        let gray = (pixel[0] as u32 * 77 + pixel[1] as u32 * 150 + pixel[2] as u32 * 29) / 256;
+        pixel[0] = gray as u8;
+        pixel[1] = gray as u8;
+        pixel[2] = gray as u8;
+    }
+}
+`),
+	fn('flip_rows', 'Write `pub fn flip_rows(pixels: &mut [u8], width: usize, height: usize)` that flips an RGBA image upside down in place (4 bytes per pixel, row by row): the first row trades places with the last, and so on.',
+		'let mut p = [1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3]; flip_rows(&mut p, 1, 3); assert_eq!(p, [3, 3, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1]); let mut q = [1, 0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0]; flip_rows(&mut q, 2, 2); assert_eq!(q, [3, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0]);', R`
+pub fn flip_rows(pixels: &mut [u8], width: usize, height: usize) {
+    let row = width * 4;
+    for y in 0..height / 2 {
+        let (top, bottom) = pixels.split_at_mut((height - 1 - y) * row);
+        top[y * row..(y + 1) * row].swap_with_slice(&mut bottom[..row]);
+    }
+}
+`),
+	fn('fill_rect', 'Write `pub fn fill_rect(pixels: &mut [u8], width: usize, height: usize, x0: usize, y0: usize, w: usize, h: usize, color: [u8; 4])` that paints a rectangle on an RGBA canvas (4 bytes per pixel, row by row). The part of the rectangle outside the canvas is ignored.',
+		'let mut p = [0u8; 2 * 2 * 4]; fill_rect(&mut p, 2, 2, 1, 0, 5, 1, [9, 8, 7, 6]); assert_eq!(p, [0, 0, 0, 0, 9, 8, 7, 6, 0, 0, 0, 0, 0, 0, 0, 0]); fill_rect(&mut p, 2, 2, 0, 1, 1, 9, [1, 2, 3, 4]); assert_eq!(&p[8..12], &[1, 2, 3, 4]); assert_eq!(&p[12..], &[0, 0, 0, 0]); fill_rect(&mut p, 2, 2, 7, 7, 2, 2, [5, 5, 5, 5]); assert_eq!(&p[..4], &[0, 0, 0, 0]);', R`
+pub fn fill_rect(pixels: &mut [u8], width: usize, height: usize, x0: usize, y0: usize, w: usize, h: usize, color: [u8; 4]) {
+    for y in y0..(y0 + h).min(height) {
+        for x in x0..(x0 + w).min(width) {
+            let i = (y * width + x) * 4;
+            pixels[i..i + 4].copy_from_slice(&color);
+        }
+    }
+}
+`),
+	fn('alpha_bounds', 'Write `pub fn alpha_bounds(pixels: &[u8], width: usize, height: usize) -> Option<(usize, usize, usize, usize)>` that finds the bounding box of the pixels that are not fully transparent in an RGBA image (alpha is the fourth byte of each pixel). Return (left, top, right, bottom), all inclusive, or None when every pixel is transparent.',
+		'let mut p = vec![0u8; 4 * 3 * 4]; assert_eq!(alpha_bounds(&p, 4, 3), None); p[(1 * 4 + 2) * 4 + 3] = 10; assert_eq!(alpha_bounds(&p, 4, 3), Some((2, 1, 2, 1))); p[(2 * 4 + 0) * 4 + 3] = 255; assert_eq!(alpha_bounds(&p, 4, 3), Some((0, 1, 2, 2)));', R`
+pub fn alpha_bounds(pixels: &[u8], width: usize, height: usize) -> Option<(usize, usize, usize, usize)> {
+    let mut bounds: Option<(usize, usize, usize, usize)> = None;
+    for y in 0..height {
+        for x in 0..width {
+            if pixels[(y * width + x) * 4 + 3] == 0 {
+                continue;
+            }
+            bounds = Some(match bounds {
+                None => (x, y, x, y),
+                Some((left, top, right, bottom)) => (left.min(x), top.min(y), right.max(x), bottom.max(y)),
+            });
+        }
+    }
+    bounds
+}
+`),
+	fn('mix_saturating', 'Write `pub fn mix(a: &[i16], b: &[i16]) -> Vec<i16>` that adds two audio tracks sample by sample without wrapping around: sums beyond the range of i16 stay at the limit. The result has the length of the longer track; where one has ended, the other passes unchanged.',
+		'assert_eq!(mix(&[1, 2, 3], &[10, 20]), vec![11, 22, 3]); assert_eq!(mix(&[30000, -30000], &[10000, -10000]), vec![32767, -32768]); assert_eq!(mix(&[], &[5]), vec![5]); assert!(mix(&[], &[]).is_empty());', R`
+pub fn mix(a: &[i16], b: &[i16]) -> Vec<i16> {
+    let len = a.len().max(b.len());
+    (0..len)
+        .map(|n| {
+            let x = a.get(n).copied().unwrap_or(0);
+            let y = b.get(n).copied().unwrap_or(0);
+            x.saturating_add(y)
+        })
+        .collect()
+}
+`),
+	fn('euclid_rhythm', 'Write `pub fn euclid(steps: usize, pulses: usize) -> Vec<bool>` that spreads `pulses` hits as evenly as possible over `steps` steps (a Euclidean rhythm): step n is a hit when (n * pulses) % steps < pulses. More pulses than steps means every step is a hit.',
+		'assert_eq!(euclid(8, 3), vec![true, false, false, true, false, false, true, false]); assert_eq!(euclid(4, 4), vec![true; 4]); assert_eq!(euclid(4, 9), vec![true; 4]); assert_eq!(euclid(5, 0), vec![false; 5]); assert_eq!(euclid(8, 2), vec![true, false, false, false, true, false, false, false]); assert!(euclid(0, 3).is_empty());', R`
+pub fn euclid(steps: usize, pulses: usize) -> Vec<bool> {
+    let pulses = pulses.min(steps);
+    (0..steps).map(|n| (n * pulses) % steps < pulses).collect()
+}
+`),
+	fn('quantize', 'Write `pub fn quantize(frame: u64, grid: u64) -> u64` that moves a position in time to the nearest multiple of grid (halfway goes up). A grid of 0 leaves the position as it is.',
+		'assert_eq!(quantize(1000, 480), 960); assert_eq!(quantize(1200, 480), 1440); assert_eq!(quantize(239, 480), 0); assert_eq!(quantize(240, 480), 480); assert_eq!(quantize(77, 0), 77); assert_eq!(quantize(960, 480), 960);', R`
+pub fn quantize(frame: u64, grid: u64) -> u64 {
+    if grid == 0 {
+        return frame;
+    }
+    (frame + grid / 2) / grid * grid
+}
+`),
+	fn('hsv_to_rgb', 'Write `pub fn hsv_to_rgb(h: f32, s: f32, v: f32) -> (u8, u8, u8)` that converts a colour from HSV (h in degrees 0..360, s and v in 0..=1) to RGB bytes, rounding each channel.',
+		'assert_eq!(hsv_to_rgb(0.0, 1.0, 1.0), (255, 0, 0)); assert_eq!(hsv_to_rgb(120.0, 1.0, 1.0), (0, 255, 0)); assert_eq!(hsv_to_rgb(240.0, 1.0, 0.5), (0, 0, 128)); assert_eq!(hsv_to_rgb(60.0, 1.0, 1.0), (255, 255, 0)); assert_eq!(hsv_to_rgb(200.0, 0.0, 1.0), (255, 255, 255)); assert_eq!(hsv_to_rgb(300.0, 0.5, 1.0), (255, 128, 255));', R`
+pub fn hsv_to_rgb(h: f32, s: f32, v: f32) -> (u8, u8, u8) {
+    let c = v * s;
+    let sector = (h / 60.0) % 6.0;
+    let x = c * (1.0 - (sector % 2.0 - 1.0).abs());
+    let (r, g, b) = match sector as u32 {
+        0 => (c, x, 0.0),
+        1 => (x, c, 0.0),
+        2 => (0.0, c, x),
+        3 => (0.0, x, c),
+        4 => (x, 0.0, c),
+        _ => (c, 0.0, x),
+    };
+    let m = v - c;
+    let byte = |value: f32| ((value + m) * 255.0).round() as u8;
+    (byte(r), byte(g), byte(b))
+}
+`),
+	fn('export_counter', 'Write two functions exported to the WebAssembly host with the C ABI and unmangled names: `tick() -> u32`, which adds one to a counter kept in a static and returns the new value, and `reset()`, which sets it back to 0. Use an atomic for the static, no unsafe code besides the attribute.',
+		'reset(); assert_eq!(tick(), 1); assert_eq!(tick(), 2); reset(); assert_eq!(tick(), 1);', R`
+use std::sync::atomic::{AtomicU32, Ordering};
+
+static COUNT: AtomicU32 = AtomicU32::new(0);
+
+#[unsafe(no_mangle)]
+pub extern "C" fn tick() -> u32 {
+    COUNT.fetch_add(1, Ordering::Relaxed) + 1
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn reset() {
+    COUNT.store(0, Ordering::Relaxed);
+}
+`),
+	fn('triangle_wave', 'Write `pub fn triangle(n: u32, period: u32) -> u32` that returns a triangle wave over the integers: it goes up from 0 to period and back down to 0, repeating every 2 * period steps. A period of 0 gives 0.',
+		'assert_eq!((0..9).map(|n| triangle(n, 3)).collect::<Vec<_>>(), vec![0, 1, 2, 3, 2, 1, 0, 1, 2]); assert_eq!(triangle(250, 100), 50); assert_eq!(triangle(5, 0), 0); assert_eq!(triangle(100, 100), 100);', R`
+pub fn triangle(n: u32, period: u32) -> u32 {
+    if period == 0 {
+        return 0;
+    }
+    let at = n % (2 * period);
+    if at <= period { at } else { 2 * period - at }
+}
+`),
+
+	tile('t_sunset', 'Write a tile program that fills the canvas with a vertical gradient from orange (255, 128, 0) at the top to dark purple (64, 0, 96) at the bottom, mixing the two linearly by the row. Alpha is 255.', R`
+            let from = [255usize, 128, 0];
+            let to = [64usize, 0, 96];
+            for c in 0..3 {
+                pixels[i + c] = ((from[c] * (height - 1 - y) + to[c] * y) / (height - 1)) as u8;
+            }
+            pixels[i + 3] = 255;
+`),
+	tile('t_dots', 'Write a tile program that draws a grid of white dots on a black background: a pixel is white when both x and y are multiples of 8. Alpha is 255.', R`
+            let level = if x % 8 == 0 && y % 8 == 0 { 255 } else { 0 };
+            pixels[i] = level;
+            pixels[i + 1] = level;
+            pixels[i + 2] = level;
+            pixels[i + 3] = 255;
+`),
+	tile('t_plasma', 'Write a tile program that draws a moving plasma in shades of green: green is 128 + 127 * sin(x / 12 + y / 9 + t_ms / 400), red and blue are 0. Alpha is 255.', R`
+            let wave = (x as f64 / 12.0 + y as f64 / 9.0 + t_ms as f64 / 400.0).sin();
+            pixels[i] = 0;
+            pixels[i + 1] = (128.0 + 127.0 * wave) as u8;
+            pixels[i + 2] = 0;
+            pixels[i + 3] = 255;
+`),
+	tile('t_scanline', 'Write a tile program with a black background and one white row that moves down with time: the row is (t_ms / 20) % height. Alpha is 255.', R`
+            let row = (t_ms as usize / 20) % height;
+            let level = if y == row { 255 } else { 0 };
+            pixels[i] = level;
+            pixels[i + 1] = level;
+            pixels[i + 2] = level;
+            pixels[i + 3] = 255;
+`),
+	tile('t_noise', 'Write a tile program that fills the canvas with gray static that does not change with time: the level of each pixel is the low byte of (x * 73 + y * 151) * 2654435761, computed in u32 with wrapping multiplication and shifted right by 24 bits. Alpha is 255.', R`
+            let hash = ((x as u32 * 73 + y as u32 * 151).wrapping_mul(2654435761) >> 24) as u8;
+            pixels[i] = hash;
+            pixels[i + 1] = hash;
+            pixels[i + 2] = hash;
+            pixels[i + 3] = 255;
+`),
+	tile('t_radial', 'Write a tile program that draws a white glow in the centre fading to black: the gray level is 255 minus the distance from the centre of the canvas in pixels times 4, never below 0. Alpha is 255.', R`
+            let dx = x as f64 - width as f64 / 2.0;
+            let dy = y as f64 - height as f64 / 2.0;
+            let level = (255.0 - (dx * dx + dy * dy).sqrt() * 4.0).max(0.0) as u8;
+            pixels[i] = level;
+            pixels[i + 1] = level;
+            pixels[i + 2] = level;
+            pixels[i + 3] = 255;
+`),
+	tile('t_marching', 'Write a tile program that draws diagonal stripes, 8 pixels of cyan (0, 255, 255) then 8 of black, that slide with time: a pixel is cyan when ((x + y + t_ms / 50) / 8) is even. Alpha is 255.', R`
+            let on = ((x + y + t_ms as usize / 50) / 8) % 2 == 0;
+            pixels[i] = 0;
+            pixels[i + 1] = if on { 255 } else { 0 };
+            pixels[i + 2] = if on { 255 } else { 0 };
+            pixels[i + 3] = 255;
+`),
+	tile('t_ellipse', 'Write a tile program that draws a magenta (255, 0, 255) ellipse on a white background, centred, as wide as half the canvas and as tall as a quarter of it (so its radii are width / 4 and height / 8). Alpha is 255.', R`
+            let dx = (x as f64 - width as f64 / 2.0) / (width as f64 / 4.0);
+            let dy = (y as f64 - height as f64 / 2.0) / (height as f64 / 8.0);
+            let inside = dx * dx + dy * dy <= 1.0;
+            pixels[i] = 255;
+            pixels[i + 1] = if inside { 0 } else { 255 };
+            pixels[i + 2] = 255;
+            pixels[i + 3] = 255;
+`),
+	tile('t_diamond', 'Write a tile program that draws a green diamond on a black background: a pixel is green (0, 255, 0) when its horizontal distance plus its vertical distance from the centre of the canvas is at most width / 3. Alpha is 255.', R`
+            let dx = x.abs_diff(width / 2);
+            let dy = y.abs_diff(height / 2);
+            pixels[i] = 0;
+            pixels[i + 1] = if dx + dy <= width / 3 { 255 } else { 0 };
+            pixels[i + 2] = 0;
+            pixels[i + 3] = 255;
+`),
+	tile('t_blink', 'Write a tile program that fills the whole canvas with one colour that changes every half second: red (255, 0, 0) while (t_ms / 500) is even, blue (0, 0, 255) while it is odd. Alpha is 255.', R`
+            let red = (t_ms / 500) % 2 == 0;
+            pixels[i] = if red { 255 } else { 0 };
+            pixels[i + 1] = 0;
+            pixels[i + 2] = if red { 0 } else { 255 };
+            pixels[i + 3] = 255;
+`),
+	tile('t_wave', 'Write a tile program that draws a sine curve in yellow (255, 255, 0) on a dark blue (0, 0, 64) background: for each column, the curve is at the row height / 2 + (height / 4) * sin(x / 10), and the pixels within 1 row of it are yellow. Alpha is 255.', R`
+            let curve = height as f64 / 2.0 + height as f64 / 4.0 * (x as f64 / 10.0).sin();
+            let on = (y as f64 - curve).abs() <= 1.0;
+            pixels[i] = if on { 255 } else { 0 };
+            pixels[i + 1] = if on { 255 } else { 0 };
+            pixels[i + 2] = if on { 0 } else { 64 };
+            pixels[i + 3] = 255;
+`),
+	tile('t_corners', 'Write a tile program with a gray (128, 128, 128) background and a white square of 10 by 10 pixels in each of the four corners. Alpha is 255.', R`
+            let near_side = x < 10 || x >= width - 10;
+            let near_end = y < 10 || y >= height - 10;
+            let level = if near_side && near_end { 255 } else { 128 };
+            pixels[i] = level;
+            pixels[i + 1] = level;
+            pixels[i + 2] = level;
+            pixels[i + 3] = 255;
+`),
+	tile('t_hue', 'Write a tile program that paints a rainbow from left to right with three sine waves a third of a turn apart: with a = x / width * 2π, red is 128 + 127 * sin(a), green is 128 + 127 * sin(a + 2π/3) and blue is 128 + 127 * sin(a + 4π/3). Alpha is 255.', R`
+            let a = x as f64 / width as f64 * std::f64::consts::TAU;
+            let third = std::f64::consts::TAU / 3.0;
+            pixels[i] = (128.0 + 127.0 * a.sin()) as u8;
+            pixels[i + 1] = (128.0 + 127.0 * (a + third).sin()) as u8;
+            pixels[i + 2] = (128.0 + 127.0 * (a + 2.0 * third).sin()) as u8;
+            pixels[i + 3] = 255;
+`),
+	tile('t_bounce', 'Write a tile program with a black background and a white square of 16 by 16 pixels, vertically centred, that slides from the left edge to the right edge and back: its left side is at a triangle wave of t_ms / 10 with period width - 16. Alpha is 255.', R`
+            let span = width - 16;
+            let at = (t_ms as usize / 10) % (2 * span);
+            let left = if at <= span { at } else { 2 * span - at };
+            let top = height / 2 - 8;
+            let inside = x >= left && x < left + 16 && y >= top && y < top + 16;
+            let level = if inside { 255 } else { 0 };
+            pixels[i] = level;
+            pixels[i + 1] = level;
+            pixels[i + 2] = level;
+            pixels[i + 3] = 255;
+`),
+	tile('t_mirror', 'Write a tile program that is symmetric about the vertical middle line: the red level grows from 0 at the left and right edges to its highest at the middle, as 255 * d / (width / 2) where d is the distance in pixels to the nearer side edge. Green and blue are 0, alpha is 255.', R`
+            let d = x.min(width - 1 - x);
+            pixels[i] = (255 * d / (width / 2)).min(255) as u8;
+            pixels[i + 1] = 0;
+            pixels[i + 2] = 0;
+            pixels[i + 3] = 255;
+`),
+	tile('t_life_colors', 'Write a tile program that colours the canvas in cells of 16 by 16 pixels: the colour of a cell depends on (x / 16 + 2 * (y / 16)) % 3, which gives red (255, 0, 0) for 0, green (0, 255, 0) for 1 and blue (0, 0, 255) for 2. Alpha is 255.', R`
+            let which = (x / 16 + 2 * (y / 16)) % 3;
+            pixels[i] = if which == 0 { 255 } else { 0 };
+            pixels[i + 1] = if which == 1 { 255 } else { 0 };
+            pixels[i + 2] = if which == 2 { 255 } else { 0 };
+            pixels[i + 3] = 255;
+`),
 ];
+
+// Ours first, then the ones brought from outside sources (import.mjs).
+export const SEEDS = [...OWN, ...IMPORTED];

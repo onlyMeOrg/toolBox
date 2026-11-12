@@ -14,7 +14,10 @@ const split = (kind, code) => (kind === 'tile' ? [TILE_HEAD, code.slice(TILE_HEA
 const ask = (seed) => seed.ask + (seed.kind === 'tile' ? TILE_NOTE : '');
 const byId = new Map(SEEDS.map((s) => [s.id, s]));
 const out = [];
+// Only seeds the compiler proved (gen.mjs lists the ones that failed).
+const failing = new Set(JSON.parse(readFileSync(new URL('./out/pairs.summary.json', import.meta.url), 'utf8')).seedsFailing);
 for (const seed of SEEDS) {
+	if (failing.has(seed.id)) continue;
 	const [head, rest] = split(seed.kind, seed.code);
 	out.push({ id: `${seed.id}:write`, seed: seed.id, kind: 'write', prompt: chatml(ask(seed), head), answer: rest + END });
 }
@@ -25,4 +28,4 @@ for (const pair of pairs) {
 	out.push({ id: pair.id, seed: pair.seed, kind: 'repair', stage: pair.stage, autofix: pair.autofix, prompt: chatml(repairUser(ask(seed), pair.broken, whyText(pair.stage, pair.why)), head), answer: rest + END });
 }
 writeFileSync(new URL('./out/examples.jsonl', import.meta.url), out.map((r) => JSON.stringify(r)).join('\n') + '\n');
-console.log(`${out.length} examples (${SEEDS.length} write, ${pairs.length} repair)`);
+console.log(`${out.length} examples (${SEEDS.length - failing.size} write, ${pairs.length} repair)`);
