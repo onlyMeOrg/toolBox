@@ -1,6 +1,6 @@
 // Runs the agent's loop over the measuring set in headless Chromium and writes the result.
 //   node run.mjs --model qwen2.5-coder-0.5b-instruct-q4_0.gguf [--calls 3] [--only id,id]
-//                [--shard 0/4] [--few] [--out results/name.json]
+//                [--shard 0/4] [--seed 1 --temp 0.3] [--few] [--out results/name.json]
 // The model is a GGUF file in ./models (or AGENTE_MODELS). Needs `npm install` and `npm run site`.
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
@@ -18,6 +18,8 @@ if (!model || !existsSync(`${models}/${model}`)) {
 const query = new URLSearchParams({ model, calls: opt('calls', '3') });
 if (opt('only')) query.set('only', opt('only'));
 if (opt('shard')) query.set('shard', opt('shard'));
+if (opt('seed')) query.set('seed', opt('seed'));
+if (opt('temp')) query.set('temp', opt('temp'));
 if (args.includes('--few')) query.set('few', '1');
 const out = opt('out', `results/${model.replace(/\.gguf$/, '')}${opt('shard') ? `-${opt('shard').replace('/', 'of')}` : ''}.json`);
 
@@ -37,7 +39,7 @@ const tokens = gens.reduce((n, s) => n + (s.tokens ?? 0), 0);
 const seconds = gens.reduce((n, s) => n + s.genMs, 0) / 1000;
 const count = (f) => R.tasks.filter(f).length;
 const summary = {
-	model, calls: +query.get('calls'), few: query.has('few'), shard: query.get('shard') ?? '0/1',
+	model, calls: +query.get('calls'), seed: +(query.get('seed') ?? 0), temp: +(query.get('temp') ?? 0), few: query.has('few'), shard: query.get('shard') ?? '0/1',
 	tasks: R.tasks.length, pass: count((t) => t.pass), firstTry: count((t) => t.pass && t.modelCalls === 1 && t.autofixes === 0),
 	passFn: count((t) => t.pass && t.kind === 'fn'), fn: count((t) => t.kind === 'fn'),
 	passTile: count((t) => t.pass && t.kind === 'tile'), tile: count((t) => t.kind === 'tile'),

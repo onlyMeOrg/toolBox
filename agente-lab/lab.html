@@ -108,7 +108,7 @@ const clean = (code) => code.replace(/\n(?:\/\/[^\n]*\n)*\s*$/, '\n').trimEnd() 
 let calls = 0;
 async function generate(user, prefill, temperature) {
   const g0 = performance.now(); calls++;
-  const res = await wllama.createCompletion({ prompt: chatml(user, prefill), max_tokens: 600, temperature, seed: 1 + calls, stop: ['\n```', '\nfn main', '\n#[cfg(test)]', '<|im_end|>'] });
+  const res = await wllama.createCompletion({ prompt: chatml(user, prefill), max_tokens: 600, temperature, seed: SEED + 1 + calls, stop: ['\n```', '\nfn main', '\n#[cfg(test)]', '<|im_end|>'] });
   return { code: clean(prefill + res.choices[0].text), genMs: Math.round(performance.now() - g0), tokens: res.usage?.completion_tokens, promptTokens: res.usage?.prompt_tokens };
 }
 async function judge(task, code) {
@@ -124,11 +124,14 @@ async function judge(task, code) {
 }
 const trimErr = (s) => s.split('\n').filter((l) => !/^\s*$/.test(l)).slice(0, 25).join('\n').slice(0, 1200);
 const MODEL_CALLS = +(P.get('calls') ?? 3);
+// seed shifts every sampling seed; temp is the temperature of the first answer (0 = always the same).
+// Runs that differ only in seed, with temp above 0, say how much of a score is luck.
+const SEED = 1000 * +(P.get('seed') ?? 0), TEMP = +(P.get('temp') ?? 0);
 for (const [n, task] of TASKS.entries()) {
   if (ONLY ? !ONLY.split(',').includes(task.id) : n % SHARDS !== SHARD) continue;
   const rec = { id: task.id, kind: task.kind, steps: [], pass: false, modelCalls: 0, autofixes: 0 }; R.tasks.push(rec);
   const ask = shots(task) + task.ask + (task.kind === 'tile' ? TILE_NOTE : ''); const head = task.kind === 'tile' ? TILE_HEAD : '';
-  let g = await generate(ask, head, 0); rec.modelCalls++; let code = g.code; rec.steps.push({ what: 'write', ...g });
+  let g = await generate(ask, head, TEMP); rec.modelCalls++; let code = g.code; rec.steps.push({ what: 'write', ...g });
   for (;;) {
     let v = await judge(task, code);
     // The compiler's own fixes first: sure ones, then the ones it is less sure of.
