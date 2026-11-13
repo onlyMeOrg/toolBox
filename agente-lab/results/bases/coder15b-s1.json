@@ -1,0 +1,772 @@
+{
+	"summary": {
+		"model": "coder15b-q4_0.gguf",
+		"calls": 1,
+		"seed": 1,
+		"temp": 0.3,
+		"few": false,
+		"shard": "0/1",
+		"tasks": 41,
+		"pass": 16,
+		"firstTry": 15,
+		"passFn": 13,
+		"fn": 32,
+		"passTile": 3,
+		"tile": 9,
+		"tokensPerSecond": 3.2,
+		"secondsPerTask": 63.1,
+		"loadMs": 6832
+	},
+	"tasks": [
+		{
+			"id": "fib",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Calculate the n-th Fibonacci number.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(fib(0), 0);\n/// assert_eq!(fib(1), 1);\n/// assert_eq!(fib(2), 1);\n/// assert_eq!(fib(3), 2);\n/// assert_eq!(fib(4), 3);\n/// assert_eq!(fib(5), 5);\n/// assert_eq!(fib(6), 8);\n/// assert_eq!(fib(7), 13);\n/// assert_eq!(fib(8), 21);\n/// assert_eq!(fib(9), 34);\n/// assert_eq!(fib(10), 55);\n/// assert_eq!(fib(11), 89);\n/// assert_eq!(fib(12), 144);\n/// assert_eq!(fib(13), 233);\n/// assert_eq!(fib(14), 377);\n/// assert_eq!(fib(15), 610);\n/// assert_eq!(fib(16), 987);\n/// assert_eq!(fib(17), 1597);\n/// assert_eq!(fib(18), 2584);\n/// assert_eq!(fib(19), 4181);\n/// assert_eq!(fib(20), 6765);\n/// assert_eq!(fib(21), 10946);\n/// assert_eq!(fib(22), 17711);\n/// assert_eq!(fib(23), 28657);\n/// assert_eq!(fib(24), 46338);\n/// assert_eq!(fib(25), 75025);\n/// assert_eq!(fib(26), 121393);\n/// assert_eq!(fib(27), 196410);\n/// assert_eq!(fib(28), 317811);\n/// assert_eq!(fib(29), 514229);\n/// assert_eq!(fib(30), 832040);\n/// assert_eq!(fib(31), 1346269);\n/// assert_eq!(fib(32), 2178309);\n/// assert_eq!(fib(33), 3542240);\n/// assert_eq!(fib(34), 5702887);\n/// assert_eq!(fib(35), 9227465);\n/// assert_eq!(fib(36), 14930352);\n/// assert_eq!(fib(37), 24157817);\n/// assert_eq!(fib(38), 43349441);\n/// assert_eq\n",
+					"genMs": 152929,
+					"tokens": 600,
+					"promptTokens": 105
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "compile",
+			"code": "/// Calculate the n-th Fibonacci number.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(fib(0), 0);\n/// assert_eq!(fib(1), 1);\n/// assert_eq!(fib(2), 1);\n/// assert_eq!(fib(3), 2);\n/// assert_eq!(fib(4), 3);\n/// assert_eq!(fib(5), 5);\n/// assert_eq!(fib(6), 8);\n/// assert_eq!(fib(7), 13);\n/// assert_eq!(fib(8), 21);\n/// assert_eq!(fib(9), 34);\n/// assert_eq!(fib(10), 55);\n/// assert_eq!(fib(11), 89);\n/// assert_eq!(fib(12), 144);\n/// assert_eq!(fib(13), 233);\n/// assert_eq!(fib(14), 377);\n/// assert_eq!(fib(15), 610);\n/// assert_eq!(fib(16), 987);\n/// assert_eq!(fib(17), 1597);\n/// assert_eq!(fib(18), 2584);\n/// assert_eq!(fib(19), 4181);\n/// assert_eq!(fib(20), 6765);\n/// assert_eq!(fib(21), 10946);\n/// assert_eq!(fib(22), 17711);\n/// assert_eq!(fib(23), 28657);\n/// assert_eq!(fib(24), 46338);\n/// assert_eq!(fib(25), 75025);\n/// assert_eq!(fib(26), 121393);\n/// assert_eq!(fib(27), 196410);\n/// assert_eq!(fib(28), 317811);\n/// assert_eq!(fib(29), 514229);\n/// assert_eq!(fib(30), 832040);\n/// assert_eq!(fib(31), 1346269);\n/// assert_eq!(fib(32), 2178309);\n/// assert_eq!(fib(33), 3542240);\n/// assert_eq!(fib(34), 5702887);\n/// assert_eq!(fib(35), 9227465);\n/// assert_eq!(fib(36), 14930352);\n/// assert_eq!(fib(37), 24157817);\n/// assert_eq!(fib(38), 43349441);\n/// assert_eq\n"
+		},
+		{
+			"id": "palindrome",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Determines if the given string is a palindrome, ignoring case and non-alphanumeric characters.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(is_palindrome(\"A man, a plan, a canal: Panama\"), true);\n/// assert_eq!(is_palindrome(\"No 'x' in Nixon\"), true);\n/// assert_eq!(is_palindrome(\"Hello, World!\"), false);\n/// assert_eq!(is_palindrome(\"\"), true);\n/// ```\nfn is_palindrome(s: &str) -> bool {\n    let filtered_chars: Vec<char> = s.chars()\n        .filter(|c| c.is_alphanumeric())\n        .map(|c| c.to_ascii_lowercase())\n        .collect();\n\n    filtered_chars == filtered_chars.iter().rev().cloned().collect()\n}\n\n// Check function to verify the correctness of the generated function.\nfn check() {\n    assert_eq!(is_palindrome(\"A man, a plan, a canal: Panama\"), true);\n    assert_eq!(is_palindrome(\"No 'x' in Nixon\"), true);\n    assert_eq!(is_palindrome(\"Hello, World!\"), false);\n    assert_eq!(is_palindrome(\"\"), true);\n    println!(\"All tests passed!\");\n}\n",
+					"genMs": 59322,
+					"tokens": 246,
+					"promptTokens": 90
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "compile",
+			"code": "/// Determines if the given string is a palindrome, ignoring case and non-alphanumeric characters.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(is_palindrome(\"A man, a plan, a canal: Panama\"), true);\n/// assert_eq!(is_palindrome(\"No 'x' in Nixon\"), true);\n/// assert_eq!(is_palindrome(\"Hello, World!\"), false);\n/// assert_eq!(is_palindrome(\"\"), true);\n/// ```\nfn is_palindrome(s: &str) -> bool {\n    let filtered_chars: Vec<char> = s.chars()\n        .filter(|c| c.is_alphanumeric())\n        .map(|c| c.to_ascii_lowercase())\n        .collect();\n\n    filtered_chars == filtered_chars.iter().rev().cloned().collect()\n}\n\n// Check function to verify the correctness of the generated function.\nfn check() {\n    assert_eq!(is_palindrome(\"A man, a plan, a canal: Panama\"), true);\n    assert_eq!(is_palindrome(\"No 'x' in Nixon\"), true);\n    assert_eq!(is_palindrome(\"Hello, World!\"), false);\n    assert_eq!(is_palindrome(\"\"), true);\n    println!(\"All tests passed!\");\n}\n"
+		},
+		{
+			"id": "rle",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Run-length encodes the input string.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(rle(\"aaabcc\"), \"3a1b2c\");\n/// assert_eq!(rle(\"\"), \"\");\n/// ```\npub fn rle(input: &str) -> String {\n    input.chars()\n        .fold(String::new(), |mut encoded, current| {\n            let count = input.chars()\n                .take_while(|&next| next == current)\n                .count();\n            encoded.push_str(&format!(\"{}{}\", count, current));\n            encoded\n        })\n}\n",
+					"genMs": 36163,
+					"tokens": 120,
+					"promptTokens": 112
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "test",
+			"code": "/// Run-length encodes the input string.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(rle(\"aaabcc\"), \"3a1b2c\");\n/// assert_eq!(rle(\"\"), \"\");\n/// ```\npub fn rle(input: &str) -> String {\n    input.chars()\n        .fold(String::new(), |mut encoded, current| {\n            let count = input.chars()\n                .take_while(|&next| next == current)\n                .count();\n            encoded.push_str(&format!(\"{}{}\", count, current));\n            encoded\n        })\n}\n"
+		},
+		{
+			"id": "primes",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Returns every prime number less than or equal to `n`, in increasing order.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(primes_up_to(10), vec![2, 3, 5, 7]);\n/// assert_eq!(primes_up_to(1), vec![]);\n/// assert_eq!(primes_up_to(2), vec![2]);\n/// ```\nfn primes_up_to(n: u32) -> Vec<u32> {\n    let mut primes = Vec::new();\n    for num in 2..=n {\n        if is_prime(num) {\n            primes.push(num);\n        }\n    }\n    primes\n}\n\n/// Checks if a number is prime.\nfn is_prime(num: u32) -> bool {\n    if num <= 1 {\n        return false;\n    }\n    for i in 2..=((num as f64).sqrt() as u32) + 1 {\n        if num % i == 0 {\n            return false;\n        }\n    }\n    true\n}\n\n// Check function to verify the correctness of the generated function.\nfn check() {\n    assert_eq!(primes_up_to(10), vec![2, 3, 5, 7]);\n    assert_eq!(primes_up_to(1), vec![]);\n    assert_eq!(primes_up_to(2), vec![2]);\n    assert_eq!(primes_up_to(31), vec![2, 3, 5, 7, 11, 13, 17, 19, 23, 29]);\n    println!(\"All tests passed!\");\n}\n",
+					"genMs": 81029,
+					"tokens": 345,
+					"promptTokens": 88
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "test",
+			"code": "/// Returns every prime number less than or equal to `n`, in increasing order.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(primes_up_to(10), vec![2, 3, 5, 7]);\n/// assert_eq!(primes_up_to(1), vec![]);\n/// assert_eq!(primes_up_to(2), vec![2]);\n/// ```\nfn primes_up_to(n: u32) -> Vec<u32> {\n    let mut primes = Vec::new();\n    for num in 2..=n {\n        if is_prime(num) {\n            primes.push(num);\n        }\n    }\n    primes\n}\n\n/// Checks if a number is prime.\nfn is_prime(num: u32) -> bool {\n    if num <= 1 {\n        return false;\n    }\n    for i in 2..=((num as f64).sqrt() as u32) + 1 {\n        if num % i == 0 {\n            return false;\n        }\n    }\n    true\n}\n\n// Check function to verify the correctness of the generated function.\nfn check() {\n    assert_eq!(primes_up_to(10), vec![2, 3, 5, 7]);\n    assert_eq!(primes_up_to(1), vec![]);\n    assert_eq!(primes_up_to(2), vec![2]);\n    assert_eq!(primes_up_to(31), vec![2, 3, 5, 7, 11, 13, 17, 19, 23, 29]);\n    println!(\"All tests passed!\");\n}\n"
+		},
+		{
+			"id": "wordcount",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::collections::HashMap;\n\n/// Counts the occurrences of each word in the given text.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(word_count(\"Hello world hello Rust\"), HashMap::from([\n///     (\"hello\".to_string(), 2),\n///     (\"world\".to_string(), 1),\n///     (\"rust\".to_string(), 1),\n/// ]));\n/// ```\npub fn word_count(text: &str) -> HashMap<String, usize> {\n    text.split_whitespace()\n        .map(|word| word.to_lowercase())\n        .fold(HashMap::new(), |mut counts, word| {\n            *counts.entry(word).or_insert(0) += 1;\n            counts\n        })\n}\n",
+					"genMs": 39102,
+					"tokens": 150,
+					"promptTokens": 93
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "use std::collections::HashMap;\n\n/// Counts the occurrences of each word in the given text.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(word_count(\"Hello world hello Rust\"), HashMap::from([\n///     (\"hello\".to_string(), 2),\n///     (\"world\".to_string(), 1),\n///     (\"rust\".to_string(), 1),\n/// ]));\n/// ```\npub fn word_count(text: &str) -> HashMap<String, usize> {\n    text.split_whitespace()\n        .map(|word| word.to_lowercase())\n        .fold(HashMap::new(), |mut counts, word| {\n            *counts.entry(word).or_insert(0) += 1;\n            counts\n        })\n}\n"
+		},
+		{
+			"id": "gcd",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Calculates the greatest common divisor of two non-negative integers.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(gcd(0, 10), 10);\n/// assert_eq!(gcd(10, 0), 10);\n/// assert_eq!(gcd(48, 18), 6);\n/// ```\npub fn gcd(a: u64, b: u64) -> u64 {\n    if b == 0 {\n        a\n    } else {\n        gcd(b, a % b)\n    }\n}\n",
+					"genMs": 33492,
+					"tokens": 116,
+					"promptTokens": 91
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "/// Calculates the greatest common divisor of two non-negative integers.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(gcd(0, 10), 10);\n/// assert_eq!(gcd(10, 0), 10);\n/// assert_eq!(gcd(48, 18), 6);\n/// ```\npub fn gcd(a: u64, b: u64) -> u64 {\n    if b == 0 {\n        a\n    } else {\n        gcd(b, a % b)\n    }\n}\n"
+		},
+		{
+			"id": "lcm",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn lcm(a: u64, b: u64) -> u64 {\n    if a == 0 || b == 0 {\n        0\n    } else {\n        (a / gcd(a, b)) * b\n    }\n}\n\nfn gcd(a: u64, b: u64) -> u64 {\n    if b == 0 {\n        a\n    } else {\n        gcd(b, a % b)\n    }\n}\n",
+					"genMs": 29102,
+					"tokens": 101,
+					"promptTokens": 94
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "pub fn lcm(a: u64, b: u64) -> u64 {\n    if a == 0 || b == 0 {\n        0\n    } else {\n        (a / gcd(a, b)) * b\n    }\n}\n\nfn gcd(a: u64, b: u64) -> u64 {\n    if b == 0 {\n        a\n    } else {\n        gcd(b, a % b)\n    }\n}\n"
+		},
+		{
+			"id": "reverse_words",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Reverses the order of words in a given string.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(reverse_words(\"Hello world\"), \"world Hello\");\n/// assert_eq!(reverse_words(\"  Leading spaces\"), \"spaces Leading\");\n/// assert_eq!(reverse_words(\"Trailing spaces  \"), \"Trailing spaces \");\n/// assert_eq!(reverse_words(\"  Multiple   spaces  \"), \"spaces   Multiple  \");\n/// ```\nfn reverse_words(s: &str) -> String {\n    s.split_whitespace()\n        .rev()\n        .collect::<Vec<&str>>()\n        .join(\" \")\n}\n\n// A simple check function to verify the correctness of the `reverse_words` function.\nfn check() {\n    assert_eq!(reverse_words(\"Hello world\"), \"world Hello\");\n    assert_eq!(reverse_words(\"  Leading spaces\"), \"spaces Leading\");\n    assert_eq!(reverse_words(\"Trailing spaces  \"), \"Trailing spaces \");\n    assert_eq!(reverse_words(\"  Multiple   spaces  \"), \"spaces   Multiple  \");\n    println!(\"All tests passed!\");\n}\n",
+					"genMs": 51782,
+					"tokens": 219,
+					"promptTokens": 88
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "/// Reverses the order of words in a given string.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(reverse_words(\"Hello world\"), \"world Hello\");\n/// assert_eq!(reverse_words(\"  Leading spaces\"), \"spaces Leading\");\n/// assert_eq!(reverse_words(\"Trailing spaces  \"), \"Trailing spaces \");\n/// assert_eq!(reverse_words(\"  Multiple   spaces  \"), \"spaces   Multiple  \");\n/// ```\nfn reverse_words(s: &str) -> String {\n    s.split_whitespace()\n        .rev()\n        .collect::<Vec<&str>>()\n        .join(\" \")\n}\n\n// A simple check function to verify the correctness of the `reverse_words` function.\nfn check() {\n    assert_eq!(reverse_words(\"Hello world\"), \"world Hello\");\n    assert_eq!(reverse_words(\"  Leading spaces\"), \"spaces Leading\");\n    assert_eq!(reverse_words(\"Trailing spaces  \"), \"Trailing spaces \");\n    assert_eq!(reverse_words(\"  Multiple   spaces  \"), \"spaces   Multiple  \");\n    println!(\"All tests passed!\");\n}\n"
+		},
+		{
+			"id": "anagram",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn is_anagram(a: &str, b: &str) -> bool {\n    let a_chars: Vec<char> = a.chars().filter(|&c| !c.is_whitespace()).collect();\n    let b_chars: Vec<char> = b.chars().filter(|&c| !c.is_whitespace()).collect();\n\n    a_chars.iter().all(|&c| b_chars.iter().filter(|&b| b == c).count() == 1)\n}\n",
+					"genMs": 28268,
+					"tokens": 98,
+					"promptTokens": 94
+				},
+				{
+					"what": "autofix",
+					"code": "pub fn is_anagram(a: &str, b: &str) -> bool {\n    let a_chars: Vec<char> = a.chars().filter(|&c| !c.is_whitespace()).collect();\n    let b_chars: Vec<char> = b.chars().filter(|&c| !c.is_whitespace()).collect();\n\n    a_chars.iter().all(|&c| b_chars.iter().filter(|&b| *b == c).count() == 1)\n}\n"
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 1,
+			"last": "test",
+			"code": "pub fn is_anagram(a: &str, b: &str) -> bool {\n    let a_chars: Vec<char> = a.chars().filter(|&c| !c.is_whitespace()).collect();\n    let b_chars: Vec<char> = b.chars().filter(|&c| !c.is_whitespace()).collect();\n\n    a_chars.iter().all(|&c| b_chars.iter().filter(|&b| *b == c).count() == 1)\n}\n"
+		},
+		{
+			"id": "sum_digits",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Returns the sum of the decimal digits of a given non-negative integer.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(sum_digits(123), 6);\n/// assert_eq!(sum_digits(456), 15);\n/// assert_eq!(sum_digits(0), 0);\n/// ```\nfn sum_digits(n: u64) -> u32 {\n    n.to_string()\n        .chars()\n        .map(|c| c.to_digit(10).unwrap())\n        .sum()\n}\n\n// Check function to verify the correctness of the generated function.\nfn check() {\n    assert_eq!(sum_digits(123), 6);\n    assert_eq!(sum_digits(456), 15);\n    assert_eq!(sum_digits(0), 0);\n    assert_eq!(sum_digits(9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n",
+					"genMs": 144768,
+					"tokens": 600,
+					"promptTokens": 81
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "compile",
+			"code": "/// Returns the sum of the decimal digits of a given non-negative integer.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(sum_digits(123), 6);\n/// assert_eq!(sum_digits(456), 15);\n/// assert_eq!(sum_digits(0), 0);\n/// ```\nfn sum_digits(n: u64) -> u32 {\n    n.to_string()\n        .chars()\n        .map(|c| c.to_digit(10).unwrap())\n        .sum()\n}\n\n// Check function to verify the correctness of the generated function.\nfn check() {\n    assert_eq!(sum_digits(123), 6);\n    assert_eq!(sum_digits(456), 15);\n    assert_eq!(sum_digits(0), 0);\n    assert_eq!(sum_digits(9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n"
+		},
+		{
+			"id": "factorial",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Computes the factorial of a non-negative integer n.\n/// If the result does not fit in a u64, returns None.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(factorial(5), Some(120));\n/// assert_eq!(factorial(0), Some(1));\n/// assert_eq!(factorial(10), Some(3628800));\n/// assert_eq!(factorial(20), Some(2432902008176640000));\n/// assert_eq!(factorial(21), None); // 21! overflows a u64\n/// ```\npub fn factorial(n: u32) -> Option<u64> {\n    if n == 0 || n == 1 {\n        return Some(1);\n    }\n\n    let mut result = 1;\n    for i in 2..=n {\n        if result > u64::MAX / i {\n            return None;\n        }\n        result *= i;\n    }\n\n    Some(result)\n}\n\n// A simple check function to verify the correctness of the factorial function.\nfn check_factorial() {\n    assert_eq!(factorial(5), Some(120));\n    assert_eq!(factorial(0), Some(1));\n    assert_eq!(factorial(10), Some(3628800));\n    assert_eq!(factorial(20), Some(2432902008176640000));\n    assert_eq!(factorial(21), None); // 21! overflows a u64\n    println!(\"All tests passed!\");\n}\n",
+					"genMs": 87849,
+					"tokens": 359,
+					"promptTokens": 88
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "compile",
+			"code": "/// Computes the factorial of a non-negative integer n.\n/// If the result does not fit in a u64, returns None.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(factorial(5), Some(120));\n/// assert_eq!(factorial(0), Some(1));\n/// assert_eq!(factorial(10), Some(3628800));\n/// assert_eq!(factorial(20), Some(2432902008176640000));\n/// assert_eq!(factorial(21), None); // 21! overflows a u64\n/// ```\npub fn factorial(n: u32) -> Option<u64> {\n    if n == 0 || n == 1 {\n        return Some(1);\n    }\n\n    let mut result = 1;\n    for i in 2..=n {\n        if result > u64::MAX / i {\n            return None;\n        }\n        result *= i;\n    }\n\n    Some(result)\n}\n\n// A simple check function to verify the correctness of the factorial function.\nfn check_factorial() {\n    assert_eq!(factorial(5), Some(120));\n    assert_eq!(factorial(0), Some(1));\n    assert_eq!(factorial(10), Some(3628800));\n    assert_eq!(factorial(20), Some(2432902008176640000));\n    assert_eq!(factorial(21), None); // 21! overflows a u64\n    println!(\"All tests passed!\");\n}\n"
+		},
+		{
+			"id": "fizzbuzz",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Returns a vector of strings for 1 to n: \"Fizz\" for multiples of 3, \"Buzz\" for multiples of 5,\n/// \"FizzBuzz\" for multiples of both, and the number itself otherwise.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(fizzbuzz(1), vec![String::from(\"1\")]);\n/// assert_eq!(fizzbuzz(3), vec![String::from(\"1\"), String::from(\"2\"), String::from(\"Fizz\")]);\n/// assert_eq!(fizzbuzz(5), vec![String::from(\"1\"), String::from(\"2\"), String::from(\"Fizz\"), String::from(\"4\"), String::from(\"Buzz\")]);\n/// assert_eq!(fizzbuzz(15), vec![String::from(\"1\"), String::from(\"2\"), String::from(\"Fizz\"), String::from(\"4\"), String::from(\"Buzz\"), String::from(\"Fizz\"), String::from(\"15\")]);\n/// ```\npub fn fizzbuzz(n: u32) -> Vec<String> {\n    (1..=n).map(|i| {\n        if i % 3 == 0 && i % 5 == 0 {\n            \"FizzBuzz\".to_string()\n        } else if i % 3 == 0 {\n            \"Fizz\".to_string()\n        } else if i % 5 == 0 {\n            \"Buzz\".to_string()\n        } else {\n            i.to_string()\n        }\n    }).collect()\n}\n",
+					"genMs": 80537,
+					"tokens": 315,
+					"promptTokens": 112
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "/// Returns a vector of strings for 1 to n: \"Fizz\" for multiples of 3, \"Buzz\" for multiples of 5,\n/// \"FizzBuzz\" for multiples of both, and the number itself otherwise.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(fizzbuzz(1), vec![String::from(\"1\")]);\n/// assert_eq!(fizzbuzz(3), vec![String::from(\"1\"), String::from(\"2\"), String::from(\"Fizz\")]);\n/// assert_eq!(fizzbuzz(5), vec![String::from(\"1\"), String::from(\"2\"), String::from(\"Fizz\"), String::from(\"4\"), String::from(\"Buzz\")]);\n/// assert_eq!(fizzbuzz(15), vec![String::from(\"1\"), String::from(\"2\"), String::from(\"Fizz\"), String::from(\"4\"), String::from(\"Buzz\"), String::from(\"Fizz\"), String::from(\"15\")]);\n/// ```\npub fn fizzbuzz(n: u32) -> Vec<String> {\n    (1..=n).map(|i| {\n        if i % 3 == 0 && i % 5 == 0 {\n            \"FizzBuzz\".to_string()\n        } else if i % 3 == 0 {\n            \"Fizz\".to_string()\n        } else if i % 5 == 0 {\n            \"Buzz\".to_string()\n        } else {\n            i.to_string()\n        }\n    }).collect()\n}\n"
+		},
+		{
+			"id": "max_subarray",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Returns the largest sum of a contiguous, non-empty run of elements.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(max_subarray(&[]), 0);\n/// assert_eq!(max_subarray(&[1, 2, 3]), 6);\n/// assert_eq!(max_subarray(&[-1, -2, -3]), -6);\n/// assert_eq!(max_subarray(&[1, -2, 3, -4, 5]), 6);\n/// ```\npub fn max_subarray(v: &[i64]) -> i64 {\n    if v.is_empty() {\n        return 0;\n    }\n\n    let mut max_sum = v[0];\n    let mut current_sum = v[0];\n\n    for &num in &v[1..] {\n        current_sum = num.max(current_sum + num);\n        max_sum = max_sum.max(current_sum);\n    }\n\n    max_sum\n}\n\n// Test the function with provided data points\n",
+					"genMs": 54475,
+					"tokens": 206,
+					"promptTokens": 95
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "/// Returns the largest sum of a contiguous, non-empty run of elements.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(max_subarray(&[]), 0);\n/// assert_eq!(max_subarray(&[1, 2, 3]), 6);\n/// assert_eq!(max_subarray(&[-1, -2, -3]), -6);\n/// assert_eq!(max_subarray(&[1, -2, 3, -4, 5]), 6);\n/// ```\npub fn max_subarray(v: &[i64]) -> i64 {\n    if v.is_empty() {\n        return 0;\n    }\n\n    let mut max_sum = v[0];\n    let mut current_sum = v[0];\n\n    for &num in &v[1..] {\n        current_sum = num.max(current_sum + num);\n        max_sum = max_sum.max(current_sum);\n    }\n\n    max_sum\n}\n\n// Test the function with provided data points\n"
+		},
+		{
+			"id": "binary_search",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Finds the index of `target` in a sorted slice `v` using binary search.\n/// Returns `Some(index)` if `target` is found, otherwise `None`.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(find(&[1, 2, 3, 4, 5], 3), Some(2));\n/// assert_eq!(find(&[1, 2, 3, 4, 5], 6), None);\n/// assert_eq!(find(&[10, 20, 30, 40, 50], 10), Some(0));\n/// ```\nfn find(v: &[i32], target: i32) -> Option<usize> {\n    if v.is_empty() {\n        return None;\n    }\n\n    let mut left = 0;\n    let mut right = v.len() - 1;\n\n    while left <= right {\n        let mid = left + (right - left) / 2;\n\n        if v[mid] == target {\n            return Some(mid);\n        } else if v[mid] < target {\n            left = mid + 1;\n        } else {\n            right = mid - 1;\n        }\n    }\n\n    None\n}\n\n// Check function to verify the correctness of the `find` function\nfn check() {\n    assert_eq!(find(&[1, 2, 3, 4, 5], 3), Some(2));\n    assert_eq!(find(&[1, 2, 3, 4, 5], 6), None);\n    assert_eq!(find(&[10, 20, 30, 40, 50], 10), Some(0));\n    assert_eq!(find(&[], 10), None);\n    assert_eq!(find(&[10], 10), Some(0));\n    assert_eq!(find(&[10, 20, 30, 40, 50], 100), None);\n    assert_eq!(find(&[10, 20, 30, 40, 50], -1), None);\n    println!(\"All tests passed!\");\n}\n",
+					"genMs": 112594,
+					"tokens": 470,
+					"promptTokens": 99
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "/// Finds the index of `target` in a sorted slice `v` using binary search.\n/// Returns `Some(index)` if `target` is found, otherwise `None`.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(find(&[1, 2, 3, 4, 5], 3), Some(2));\n/// assert_eq!(find(&[1, 2, 3, 4, 5], 6), None);\n/// assert_eq!(find(&[10, 20, 30, 40, 50], 10), Some(0));\n/// ```\nfn find(v: &[i32], target: i32) -> Option<usize> {\n    if v.is_empty() {\n        return None;\n    }\n\n    let mut left = 0;\n    let mut right = v.len() - 1;\n\n    while left <= right {\n        let mid = left + (right - left) / 2;\n\n        if v[mid] == target {\n            return Some(mid);\n        } else if v[mid] < target {\n            left = mid + 1;\n        } else {\n            right = mid - 1;\n        }\n    }\n\n    None\n}\n\n// Check function to verify the correctness of the `find` function\nfn check() {\n    assert_eq!(find(&[1, 2, 3, 4, 5], 3), Some(2));\n    assert_eq!(find(&[1, 2, 3, 4, 5], 6), None);\n    assert_eq!(find(&[10, 20, 30, 40, 50], 10), Some(0));\n    assert_eq!(find(&[], 10), None);\n    assert_eq!(find(&[10], 10), Some(0));\n    assert_eq!(find(&[10, 20, 30, 40, 50], 100), None);\n    assert_eq!(find(&[10, 20, 30, 40, 50], -1), None);\n    println!(\"All tests passed!\");\n}\n"
+		},
+		{
+			"id": "to_binary",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn to_binary(n: u32) -> String {\n    let mut result = String::new();\n    let mut num = n;\n\n    while num > 0 {\n        result.insert(0, (num % 2) as u8 + b'0');\n        num /= 2;\n    }\n\n    result\n}\n",
+					"genMs": 21264,
+					"tokens": 70,
+					"promptTokens": 90
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "compile",
+			"code": "pub fn to_binary(n: u32) -> String {\n    let mut result = String::new();\n    let mut num = n;\n\n    while num > 0 {\n        result.insert(0, (num % 2) as u8 + b'0');\n        num /= 2;\n    }\n\n    result\n}\n"
+		},
+		{
+			"id": "from_roman",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn from_roman(s: &str) -> Option<u32> {\n    let mut number = 0;\n\n    for (i, c) in s.chars().enumerate() {\n        let value = match c {\n            'I' => 1,\n            'V' => 5,\n            'X' => 10,\n            'L' => 50,\n            'C' => 100,\n            'D' => 500,\n            'M' => 1000,\n            _ => return None,\n        };\n\n        if i > 0 && value > number {\n            number -= value;\n        } else {\n            number += value;\n        }\n    }\n\n    Some(number)\n}\n",
+					"genMs": 42779,
+					"tokens": 155,
+					"promptTokens": 110
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "test",
+			"code": "pub fn from_roman(s: &str) -> Option<u32> {\n    let mut number = 0;\n\n    for (i, c) in s.chars().enumerate() {\n        let value = match c {\n            'I' => 1,\n            'V' => 5,\n            'X' => 10,\n            'L' => 50,\n            'C' => 100,\n            'D' => 500,\n            'M' => 1000,\n            _ => return None,\n        };\n\n        if i > 0 && value > number {\n            number -= value;\n        } else {\n            number += value;\n        }\n    }\n\n    Some(number)\n}\n"
+		},
+		{
+			"id": "caesar",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Encrypts a string using the Caesar cipher.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(caesar(\"abc\", 3), \"def\");\n/// assert_eq!(caesar(\"xyz\", 2), \"abc\");\n/// assert_eq!(caesar(\"Hello, World!\", 5), \"Mjqqt, Btwqi!\");\n/// assert_eq!(caesar(\"Rust\", 10), \"Vqrs\");\n/// ```\nfn caesar(s: &str, shift: u8) -> String {\n    s.chars()\n        .map(|c| {\n            if c.is_ascii_alphabetic() {\n                let base = if c.is_ascii_uppercase() { 'A' } else { 'a' };\n                ((c as u8 - base + shift) % 26) as u8 + base\n            } else {\n                c\n            }\n        })\n        .collect()\n}\n",
+					"genMs": 47966,
+					"tokens": 191,
+					"promptTokens": 99
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "compile",
+			"code": "/// Encrypts a string using the Caesar cipher.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(caesar(\"abc\", 3), \"def\");\n/// assert_eq!(caesar(\"xyz\", 2), \"abc\");\n/// assert_eq!(caesar(\"Hello, World!\", 5), \"Mjqqt, Btwqi!\");\n/// assert_eq!(caesar(\"Rust\", 10), \"Vqrs\");\n/// ```\nfn caesar(s: &str, shift: u8) -> String {\n    s.chars()\n        .map(|c| {\n            if c.is_ascii_alphabetic() {\n                let base = if c.is_ascii_uppercase() { 'A' } else { 'a' };\n                ((c as u8 - base + shift) % 26) as u8 + base\n            } else {\n                c\n            }\n        })\n        .collect()\n}\n"
+		},
+		{
+			"id": "dedup",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Removes consecutive repeated values from a slice, keeping the first of each run.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(dedup(&[1, 2, 2, 3, 4, 4, 4]), vec![1, 2, 3, 4]);\n/// assert_eq!(dedup(&[1, 1, 1, 1]), vec![1]);\n/// assert_eq!(dedup(&[]), Vec::<i32>::new());\n/// ```\npub fn dedup(v: &[i32]) -> Vec<i32> {\n    v.iter()\n        .enumerate()\n        .filter_map(|(i, &x)| if i == 0 || x != v[i - 1] { Some(x) } else { None })\n        .collect()\n}\n",
+					"genMs": 42697,
+					"tokens": 174,
+					"promptTokens": 85
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "/// Removes consecutive repeated values from a slice, keeping the first of each run.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(dedup(&[1, 2, 2, 3, 4, 4, 4]), vec![1, 2, 3, 4]);\n/// assert_eq!(dedup(&[1, 1, 1, 1]), vec![1]);\n/// assert_eq!(dedup(&[]), Vec::<i32>::new());\n/// ```\npub fn dedup(v: &[i32]) -> Vec<i32> {\n    v.iter()\n        .enumerate()\n        .filter_map(|(i, &x)| if i == 0 || x != v[i - 1] { Some(x) } else { None })\n        .collect()\n}\n"
+		},
+		{
+			"id": "merge_sorted",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Merges two sorted slices into a single sorted vector.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(merge_sorted(&[1, 3, 5], &[2, 4, 6]), vec![1, 2, 3, 4, 5, 6]);\n/// assert_eq!(merge_sorted(&[], &[1, 2, 3]), vec![1, 2, 3]);\n/// assert_eq!(merge_sorted(&[1, 2, 3], &[]), vec![1, 2, 3]);\n/// ```\npub fn merge_sorted(a: &[i32], b: &[i32]) -> Vec<i32> {\n    let mut merged = Vec::with_capacity(a.len() + b.len());\n    let mut i = 0;\n    let mut j = 0;\n\n    while i < a.len() && j < b.len() {\n        if a[i] < b[j] {\n            merged.push(a[i]);\n            i += 1;\n        } else {\n            merged.push(b[j]);\n            j += 1;\n        }\n    }\n\n    merged.extend(a[i..].iter());\n    merged.extend(b[j..].iter());\n\n    merged\n}\n\n// Check function to verify the correctness of the merge_sorted function\nfn check() {\n    assert_eq!(merge_sorted(&[1, 3, 5], &[2, 4, 6]), vec![1, 2, 3, 4, 5, 6]);\n    assert_eq!(merge_sorted(&[], &[1, 2, 3]), vec![1, 2, 3]);\n    assert_eq!(merge_sorted(&[1, 2, 3], &[]), vec![1, 2, 3]);\n    println!(\"All tests passed!\");\n}\n",
+					"genMs": 91046,
+					"tokens": 385,
+					"promptTokens": 89
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "/// Merges two sorted slices into a single sorted vector.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(merge_sorted(&[1, 3, 5], &[2, 4, 6]), vec![1, 2, 3, 4, 5, 6]);\n/// assert_eq!(merge_sorted(&[], &[1, 2, 3]), vec![1, 2, 3]);\n/// assert_eq!(merge_sorted(&[1, 2, 3], &[]), vec![1, 2, 3]);\n/// ```\npub fn merge_sorted(a: &[i32], b: &[i32]) -> Vec<i32> {\n    let mut merged = Vec::with_capacity(a.len() + b.len());\n    let mut i = 0;\n    let mut j = 0;\n\n    while i < a.len() && j < b.len() {\n        if a[i] < b[j] {\n            merged.push(a[i]);\n            i += 1;\n        } else {\n            merged.push(b[j]);\n            j += 1;\n        }\n    }\n\n    merged.extend(a[i..].iter());\n    merged.extend(b[j..].iter());\n\n    merged\n}\n\n// Check function to verify the correctness of the merge_sorted function\nfn check() {\n    assert_eq!(merge_sorted(&[1, 3, 5], &[2, 4, 6]), vec![1, 2, 3, 4, 5, 6]);\n    assert_eq!(merge_sorted(&[], &[1, 2, 3]), vec![1, 2, 3]);\n    assert_eq!(merge_sorted(&[1, 2, 3], &[]), vec![1, 2, 3]);\n    println!(\"All tests passed!\");\n}\n"
+		},
+		{
+			"id": "capitalize",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn capitalize_words(s: &str) -> String {\n    s.split_whitespace()\n        .map(|word| word.chars().enumerate()\n                 .map(|(i, c)| if i == 0 { c.to_uppercase() } else { c })\n                 .collect::<String>())\n        .collect::<Vec<String>>()\n        .join(\" \")\n}\n",
+					"genMs": 22223,
+					"tokens": 75,
+					"promptTokens": 91
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "compile",
+			"code": "pub fn capitalize_words(s: &str) -> String {\n    s.split_whitespace()\n        .map(|word| word.chars().enumerate()\n                 .map(|(i, c)| if i == 0 { c.to_uppercase() } else { c })\n                 .collect::<String>())\n        .collect::<Vec<String>>()\n        .join(\" \")\n}\n"
+		},
+		{
+			"id": "balanced",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn is_balanced(s: &str) -> bool {\n    let mut stack = Vec::new();\n\n    for c in s.chars() {\n        match c {\n            '(' | '[' | '{' => stack.push(c),\n            ')' => {\n                if stack.pop().is_none() || stack.last() != Some('(')) {\n                    return false;\n                }\n            },\n            ']' => {\n                if stack.pop().is_none() || stack.last() != Some('[')) {\n                    return false;\n                }\n            },\n            '}' => {\n                if stack.pop().is_none() || stack.last() != Some('{')) {\n                    return false;\n                }\n            },\n            _ => {}\n        }\n    }\n\n    stack.is_empty()\n}\n",
+					"genMs": 38544,
+					"tokens": 152,
+					"promptTokens": 90
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "compile",
+			"code": "pub fn is_balanced(s: &str) -> bool {\n    let mut stack = Vec::new();\n\n    for c in s.chars() {\n        match c {\n            '(' | '[' | '{' => stack.push(c),\n            ')' => {\n                if stack.pop().is_none() || stack.last() != Some('(')) {\n                    return false;\n                }\n            },\n            ']' => {\n                if stack.pop().is_none() || stack.last() != Some('[')) {\n                    return false;\n                }\n            },\n            '}' => {\n                if stack.pop().is_none() || stack.last() != Some('{')) {\n                    return false;\n                }\n            },\n            _ => {}\n        }\n    }\n\n    stack.is_empty()\n}\n"
+		},
+		{
+			"id": "collatz",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn collatz_steps(n: u64) -> u32 {\n    let mut steps = 0;\n    while n != 1 {\n        steps += 1;\n        if n % 2 == 0 {\n            n /= 2;\n        } else {\n            n = 3 * n + 1;\n        }\n    }\n    steps\n}\n\n// Example usage:\n",
+					"genMs": 28045,
+					"tokens": 82,
+					"promptTokens": 121
+				},
+				{
+					"what": "autofix",
+					"code": "pub fn collatz_steps(mut n: u64) -> u32 {\n    let mut steps = 0;\n    while n != 1 {\n        steps += 1;\n        if n % 2 == 0 {\n            n /= 2;\n        } else {\n            n = 3 * n + 1;\n        }\n    }\n    steps\n}\n\n// Example usage:\n"
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 1,
+			"last": "pass",
+			"code": "pub fn collatz_steps(mut n: u64) -> u32 {\n    let mut steps = 0;\n    while n != 1 {\n        steps += 1;\n        if n % 2 == 0 {\n            n /= 2;\n        } else {\n            n = 3 * n + 1;\n        }\n    }\n    steps\n}\n\n// Example usage:\n"
+		},
+		{
+			"id": "median",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Calculates the median of a slice of f64 values.\n/// If the slice is empty, returns None.\n/// The slice is not sorted.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(median(&[]), None);\n/// assert_eq!(median(&[1.0]), Some(1.0));\n/// assert_eq!(median(&[3.0, 1.0, 2.0]), Some(2.0));\n/// assert_eq!(median(&[5.0, 3.0, 1.0, 4.0, 2.0]), Some(3.0));\n/// ```\npub fn median(v: &[f64]) -> Option<f64> {\n    if v.is_empty() {\n        return None;\n    }\n\n    let mut sorted_v = v.to_vec();\n    sorted_v.sort_unstable();\n\n    let len = sorted_v.len();\n    if len % 2 == 0 {\n        Some((sorted_v[len / 2 - 1] + sorted_v[len / 2]) / 2.0)\n    } else {\n        Some(sorted_v[len / 2])\n    }\n}\n\n// Check function to verify the correctness of the median function\nfn check() {\n    assert_eq!(median(&[]), None);\n    assert_eq!(median(&[1.0]), Some(1.0));\n    assert_eq!(median(&[3.0, 1.0, 2.0]), Some(2.0));\n    assert_eq!(median(&[5.0, 3.0, 1.0, 4.0, 2.0]), Some(3.0));\n    println!(\"All tests passed!\");\n}\n",
+					"genMs": 86469,
+					"tokens": 356,
+					"promptTokens": 105
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "compile",
+			"code": "/// Calculates the median of a slice of f64 values.\n/// If the slice is empty, returns None.\n/// The slice is not sorted.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(median(&[]), None);\n/// assert_eq!(median(&[1.0]), Some(1.0));\n/// assert_eq!(median(&[3.0, 1.0, 2.0]), Some(2.0));\n/// assert_eq!(median(&[5.0, 3.0, 1.0, 4.0, 2.0]), Some(3.0));\n/// ```\npub fn median(v: &[f64]) -> Option<f64> {\n    if v.is_empty() {\n        return None;\n    }\n\n    let mut sorted_v = v.to_vec();\n    sorted_v.sort_unstable();\n\n    let len = sorted_v.len();\n    if len % 2 == 0 {\n        Some((sorted_v[len / 2 - 1] + sorted_v[len / 2]) / 2.0)\n    } else {\n        Some(sorted_v[len / 2])\n    }\n}\n\n// Check function to verify the correctness of the median function\nfn check() {\n    assert_eq!(median(&[]), None);\n    assert_eq!(median(&[1.0]), Some(1.0));\n    assert_eq!(median(&[3.0, 1.0, 2.0]), Some(2.0));\n    assert_eq!(median(&[5.0, 3.0, 1.0, 4.0, 2.0]), Some(3.0));\n    println!(\"All tests passed!\");\n}\n"
+		},
+		{
+			"id": "transpose",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Transpose a rectangular matrix given as rows.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(transpose(&vec![vec![1, 2], vec![3, 4]]), vec![vec![1, 3], vec![2, 4]]);\n/// assert_eq!(transpose(&vec![]), vec![]);\n/// ```\npub fn transpose(m: &[Vec<i32>]) -> Vec<Vec<i32>> {\n    m.iter()\n        .map(|row| row.clone())\n        .collect()\n}\n",
+					"genMs": 31586,
+					"tokens": 112,
+					"promptTokens": 95
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "test",
+			"code": "/// Transpose a rectangular matrix given as rows.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(transpose(&vec![vec![1, 2], vec![3, 4]]), vec![vec![1, 3], vec![2, 4]]);\n/// assert_eq!(transpose(&vec![]), vec![]);\n/// ```\npub fn transpose(m: &[Vec<i32>]) -> Vec<Vec<i32>> {\n    m.iter()\n        .map(|row| row.clone())\n        .collect()\n}\n"
+		},
+		{
+			"id": "hex_to_rgb",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Parses a colour written as \"#rrggbb\" (hexadecimal, any case).\n/// Returns None for anything else.\n///\n/// # Examples\n/// ```\n/// assert_eq!(hex_to_rgb(\"#000000\"), Some((0, 0, 0)));\n/// assert_eq!(hex_to_rgb(\"#FFFFFF\"), Some((255, 255, 255)));\n/// assert_eq!(hex_to_rgb(\"#123456\"), Some((18, 52, 86)));\n/// assert_eq!(hex_to_rgb(\"#GRR\"), None);\n/// ```\npub fn hex_to_rgb(s: &str) -> Option<(u8, u8, u8)> {\n    if s.len() != 7 || !s.chars().all(|c| c.is_digit(16)) {\n        return None;\n    }\n\n    let mut rgb = [0; 3];\n    for (i, c) in s.chars().enumerate() {\n        if i % 2 == 0 {\n            rgb[i / 2] = c.to_digit(16).unwrap() as u8 * 16;\n        } else {\n            rgb[i / 2] += c.to_digit(16).unwrap();\n        }\n    }\n\n    Some(rgb)\n}\n",
+					"genMs": 66000,
+					"tokens": 272,
+					"promptTokens": 102
+				},
+				{
+					"what": "autofix",
+					"code": "/// Parses a colour written as \"#rrggbb\" (hexadecimal, any case).\n/// Returns None for anything else.\n///\n/// # Examples\n/// ```\n/// assert_eq!(hex_to_rgb(\"#000000\"), Some((0, 0, 0)));\n/// assert_eq!(hex_to_rgb(\"#FFFFFF\"), Some((255, 255, 255)));\n/// assert_eq!(hex_to_rgb(\"#123456\"), Some((18, 52, 86)));\n/// assert_eq!(hex_to_rgb(\"#GRR\"), None);\n/// ```\npub fn hex_to_rgb(s: &str) -> Option<(u8, u8, u8)> {\n    if s.len() != 7 || !s.chars().all(|c| c.is_digit(16)) {\n        return None;\n    }\n\n    let mut rgb = [0; 3];\n    for (i, c) in s.chars().enumerate() {\n        if i % 2 == 0 {\n            rgb[i / 2] = c.to_digit(16).unwrap() as u8 * 16;\n        } else {\n            rgb[i / 2] += c.to_digit(16).unwrap();\n        }\n    }\n\n    Some(rgb.into())\n}\n"
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 1,
+			"last": "compile",
+			"code": "/// Parses a colour written as \"#rrggbb\" (hexadecimal, any case).\n/// Returns None for anything else.\n///\n/// # Examples\n/// ```\n/// assert_eq!(hex_to_rgb(\"#000000\"), Some((0, 0, 0)));\n/// assert_eq!(hex_to_rgb(\"#FFFFFF\"), Some((255, 255, 255)));\n/// assert_eq!(hex_to_rgb(\"#123456\"), Some((18, 52, 86)));\n/// assert_eq!(hex_to_rgb(\"#GRR\"), None);\n/// ```\npub fn hex_to_rgb(s: &str) -> Option<(u8, u8, u8)> {\n    if s.len() != 7 || !s.chars().all(|c| c.is_digit(16)) {\n        return None;\n    }\n\n    let mut rgb = [0; 3];\n    for (i, c) in s.chars().enumerate() {\n        if i % 2 == 0 {\n            rgb[i / 2] = c.to_digit(16).unwrap() as u8 * 16;\n        } else {\n            rgb[i / 2] += c.to_digit(16).unwrap();\n        }\n    }\n\n    Some(rgb.into())\n}\n"
+		},
+		{
+			"id": "leap_year",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Determines if a given year is a leap year according to the Gregorian calendar.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(is_leap_year(2000), true);\n/// assert_eq!(is_leap_year(1900), false);\n/// assert_eq!(is_leap_year(2020), true);\n/// assert_eq!(is_leap_year(2021), false);\n/// ```\nfn is_leap_year(year: u32) -> bool {\n    if year % 400 == 0 {\n        true\n    } else if year % 100 == 0 {\n        false\n    } else {\n        year % 4 == 0\n    }\n}\n\n// A simple check function to verify the correctness of the `is_leap_year` function.\nfn check_leap_year() {\n    assert_eq!(is_leap_year(2000), true, \"2000 is a leap year\");\n    assert_eq!(is_leap_year(1900), false, \"1900 is not a leap year\");\n    assert_eq!(is_leap_year(2020), true, \"2020 is a leap year\");\n    assert_eq!(is_leap_year(2021), false, \"2021 is not a leap year\");\n    println!(\"All tests passed!\");\n}\n",
+					"genMs": 71793,
+					"tokens": 295,
+					"promptTokens": 92
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "/// Determines if a given year is a leap year according to the Gregorian calendar.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(is_leap_year(2000), true);\n/// assert_eq!(is_leap_year(1900), false);\n/// assert_eq!(is_leap_year(2020), true);\n/// assert_eq!(is_leap_year(2021), false);\n/// ```\nfn is_leap_year(year: u32) -> bool {\n    if year % 400 == 0 {\n        true\n    } else if year % 100 == 0 {\n        false\n    } else {\n        year % 4 == 0\n    }\n}\n\n// A simple check function to verify the correctness of the `is_leap_year` function.\nfn check_leap_year() {\n    assert_eq!(is_leap_year(2000), true, \"2000 is a leap year\");\n    assert_eq!(is_leap_year(1900), false, \"1900 is not a leap year\");\n    assert_eq!(is_leap_year(2020), true, \"2020 is a leap year\");\n    assert_eq!(is_leap_year(2021), false, \"2021 is not a leap year\");\n    println!(\"All tests passed!\");\n}\n"
+		},
+		{
+			"id": "second_largest",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Returns the second largest distinct value in the slice, or None if there are fewer than two distinct values.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(second_largest(&[]), None);\n/// assert_eq!(second_largest(&[1]), None);\n/// assert_eq!(second_largest(&[1, 2]), Some(2));\n/// assert_eq!(second_largest(&[1, 2, 3]), Some(2));\n/// assert_eq!(second_largest(&[1, 2, 3, 4]), Some(3));\n/// assert_eq!(second_largest(&[1, 2, 3, 4, 5]), Some(4));\n/// assert_eq!(second_largest(&[1, 2, 3, 4, 5, 6]), Some(5));\n/// assert_eq!(second_largest(&[1, 2, 3, 4, 5, 6, 7]), Some(6));\n/// assert_eq!(second_largest(&[1, 2, 3, 4, 5, 6, 7, 8]), Some(7));\n/// assert_eq!(second_largest(&[1, 2, 3, 4, 5, 6, 7, 8, 9]), Some(8));\n/// assert_eq!(second_largest(&[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), Some(9));\n/// ```\nfn second_largest(v: &[i32]) -> Option<i32> {\n    let mut distinct_values: Vec<i32> = v.iter().cloned().collect();\n    distinct_values.sort_unstable();\n    distinct_values.dedup();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n",
+					"genMs": 140566,
+					"tokens": 600,
+					"promptTokens": 92
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "compile",
+			"code": "/// Returns the second largest distinct value in the slice, or None if there are fewer than two distinct values.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(second_largest(&[]), None);\n/// assert_eq!(second_largest(&[1]), None);\n/// assert_eq!(second_largest(&[1, 2]), Some(2));\n/// assert_eq!(second_largest(&[1, 2, 3]), Some(2));\n/// assert_eq!(second_largest(&[1, 2, 3, 4]), Some(3));\n/// assert_eq!(second_largest(&[1, 2, 3, 4, 5]), Some(4));\n/// assert_eq!(second_largest(&[1, 2, 3, 4, 5, 6]), Some(5));\n/// assert_eq!(second_largest(&[1, 2, 3, 4, 5, 6, 7]), Some(6));\n/// assert_eq!(second_largest(&[1, 2, 3, 4, 5, 6, 7, 8]), Some(7));\n/// assert_eq!(second_largest(&[1, 2, 3, 4, 5, 6, 7, 8, 9]), Some(8));\n/// assert_eq!(second_largest(&[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), Some(9));\n/// ```\nfn second_largest(v: &[i32]) -> Option<i32> {\n    let mut distinct_values: Vec<i32> = v.iter().cloned().collect();\n    distinct_values.sort_unstable();\n    distinct_values.dedup();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n    distinct_values.pop();\n"
+		},
+		{
+			"id": "rotate_left",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn rotate_left(v: &[i32], k: usize) -> Vec<i32> {\n    let len = v.len();\n    let k = k % len; // Handle cases where k > len\n\n    v.iter()\n        .skip(k)\n        .chain(v.iter().take(k))\n        .cloned()\n        .collect()\n}\n",
+					"genMs": 27600,
+					"tokens": 75,
+					"promptTokens": 102
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "test",
+			"code": "pub fn rotate_left(v: &[i32], k: usize) -> Vec<i32> {\n    let len = v.len();\n    let k = k % len; // Handle cases where k > len\n\n    v.iter()\n        .skip(k)\n        .chain(v.iter().take(k))\n        .cloned()\n        .collect()\n}\n"
+		},
+		{
+			"id": "remove_vowels",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "/// Removes vowels from a given string.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(remove_vowels(\"Hello\"), \"Hll\");\n/// assert_eq!(remove_vowels(\"Rust\"), \"Rst\");\n/// assert_eq!(remove_vowels(\"AEIOU\"), \"\");\n/// assert_eq!(remove_vowels(\"bcdfghjklmnpqrstvwxyz\"), \"bcdfghjklmnpqrstvwxyz\");\n/// ```\npub fn remove_vowels(s: &str) -> String {\n    s.chars()\n        .filter(|c| !matches!(c, 'a'..='u' | 'A'..='U'))\n        .collect()\n}\n",
+					"genMs": 38182,
+					"tokens": 146,
+					"promptTokens": 88
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "test",
+			"code": "/// Removes vowels from a given string.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(remove_vowels(\"Hello\"), \"Hll\");\n/// assert_eq!(remove_vowels(\"Rust\"), \"Rst\");\n/// assert_eq!(remove_vowels(\"AEIOU\"), \"\");\n/// assert_eq!(remove_vowels(\"bcdfghjklmnpqrstvwxyz\"), \"bcdfghjklmnpqrstvwxyz\");\n/// ```\npub fn remove_vowels(s: &str) -> String {\n    s.chars()\n        .filter(|c| !matches!(c, 'a'..='u' | 'A'..='U'))\n        .collect()\n}\n"
+		},
+		{
+			"id": "parse_kv",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::collections::HashMap;\n\n/// Parses a string into a HashMap of key-value pairs.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(parse_kv(\"a=1;b=two\"), HashMap::from([(\"a\".to_string(), \"1\".to_string()), (\"b\".to_string(), \"two\".to_string())]));\n/// assert_eq!(parse_kv(\"a;b=two\"), HashMap::from([(\"a\".to_string(), \"\".to_string()), (\"b\".to_string(), \"two\".to_string())]));\n/// assert_eq!(parse_kv(\"a=b\"), HashMap::from([(\"a\".to_string(), \"b\".to_string())]));\n/// assert_eq!(parse_kv(\"a\"), HashMap::from([(\"a\".to_string(), \"\".to_string())]));\n/// ```\npub fn parse_kv(s: &str) -> HashMap<String, String> {\n    s.split(';')\n        .filter_map(|pair| {\n            let mut parts = pair.split('=');\n            let key = parts.next().map(|s| s.to_string());\n            let value = parts.next().map(|s| s.to_string());\n            key.and_then(|k| value.map(|v| (k, v)))\n        })\n        .collect()\n}\n",
+					"genMs": 63080,
+					"tokens": 257,
+					"promptTokens": 111
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "use std::collections::HashMap;\n\n/// Parses a string into a HashMap of key-value pairs.\n///\n/// # Examples\n///\n/// ```\n/// assert_eq!(parse_kv(\"a=1;b=two\"), HashMap::from([(\"a\".to_string(), \"1\".to_string()), (\"b\".to_string(), \"two\".to_string())]));\n/// assert_eq!(parse_kv(\"a;b=two\"), HashMap::from([(\"a\".to_string(), \"\".to_string()), (\"b\".to_string(), \"two\".to_string())]));\n/// assert_eq!(parse_kv(\"a=b\"), HashMap::from([(\"a\".to_string(), \"b\".to_string())]));\n/// assert_eq!(parse_kv(\"a\"), HashMap::from([(\"a\".to_string(), \"\".to_string())]));\n/// ```\npub fn parse_kv(s: &str) -> HashMap<String, String> {\n    s.split(';')\n        .filter_map(|pair| {\n            let mut parts = pair.split('=');\n            let key = parts.next().map(|s| s.to_string());\n            let value = parts.next().map(|s| s.to_string());\n            key.and_then(|k| value.map(|v| (k, v)))\n        })\n        .collect()\n}\n"
+		},
+		{
+			"id": "running_sum",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn running_sum(v: &[i32]) -> Vec<i32> {\n    v.iter().enumerate().map(|(i, &x)| x + if i == 0 { 0 } else { v[i - 1] }).collect()\n}\n",
+					"genMs": 18552,
+					"tokens": 57,
+					"promptTokens": 90
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "test",
+			"code": "pub fn running_sum(v: &[i32]) -> Vec<i32> {\n    v.iter().enumerate().map(|(i, &x)| x + if i == 0 { 0 } else { v[i - 1] }).collect()\n}\n"
+		},
+		{
+			"id": "count_char",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn count_char(s: &str, c: char) -> usize {\n    s.chars().filter(|&x| x == c).count()\n}\n",
+					"genMs": 12846,
+					"tokens": 34,
+					"promptTokens": 83
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "pub fn count_char(s: &str, c: char) -> usize {\n    s.chars().filter(|&x| x == c).count()\n}\n"
+		},
+		{
+			"id": "gradient",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 0;\n            pixels[i + 1] = 255;\n            pixels[i + 2] = 0;\n            pixels[i + 3] = 255;\n        }\n    }\n    pixels.as_ptr()\n}\n",
+					"genMs": 70445,
+					"tokens": 56,
+					"promptTokens": 405
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "wrong",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 0;\n            pixels[i + 1] = 255;\n            pixels[i + 2] = 0;\n            pixels[i + 3] = 255;\n        }\n    }\n    pixels.as_ptr()\n}\n"
+		},
+		{
+			"id": "checker",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            if (x + y) % 2 == 0 {\n                pixels[i] = 0; // Black\n                pixels[i + 1] = 0;\n                pixels[i + 2] = 0;\n                pixels[i + 3] = 255; // Alpha\n            } else {\n                pixels[i] = 255; // White\n                pixels[i + 1] = 255;\n                pixels[i + 2] = 255;\n                pixels[i + 3] = 255; // Alpha\n            }\n        }\n    }\n    pixels.as_ptr()\n}\n",
+					"genMs": 90228,
+					"tokens": 136,
+					"promptTokens": 402
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "wrong",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            if (x + y) % 2 == 0 {\n                pixels[i] = 0; // Black\n                pixels[i + 1] = 0;\n                pixels[i + 2] = 0;\n                pixels[i + 3] = 255; // Alpha\n            } else {\n                pixels[i] = 255; // White\n                pixels[i + 1] = 255;\n                pixels[i + 2] = 255;\n                pixels[i + 3] = 255; // Alpha\n            }\n        }\n    }\n    pixels.as_ptr()\n}\n"
+		},
+		{
+			"id": "solid",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 0;\n            pixels[i + 1] = 255;\n            pixels[i + 2] = 0;\n            pixels[i + 3] = 255;\n        }\n    }\n    pixels.as_ptr()\n}\n",
+					"genMs": 67445,
+					"tokens": 57,
+					"promptTokens": 398
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 0;\n            pixels[i + 1] = 255;\n            pixels[i + 2] = 0;\n            pixels[i + 3] = 255;\n        }\n    }\n    pixels.as_ptr()\n}\n"
+		},
+		{
+			"id": "stripes",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            if y % 2 == 0 {\n                pixels[i] = 255; // Red\n                pixels[i + 1] = 0; // Green\n                pixels[i + 2] = 0; // Blue\n                pixels[i + 3] = 255; // Alpha\n            } else {\n                pixels[i] = 0; // Red\n                pixels[i + 1] = 255; // Green\n                pixels[i + 2] = 0; // Blue\n                pixels[i + 3] = 255; // Alpha\n            }\n        }\n    }\n    pixels.as_ptr()\n}\n",
+					"genMs": 88608,
+					"tokens": 141,
+					"promptTokens": 397
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "wrong",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            if y % 2 == 0 {\n                pixels[i] = 255; // Red\n                pixels[i + 1] = 0; // Green\n                pixels[i + 2] = 0; // Blue\n                pixels[i + 3] = 255; // Alpha\n            } else {\n                pixels[i] = 0; // Red\n                pixels[i + 1] = 255; // Green\n                pixels[i + 2] = 0; // Blue\n                pixels[i + 3] = 255; // Alpha\n            }\n        }\n    }\n    pixels.as_ptr()\n}\n"
+		},
+		{
+			"id": "halves",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            if x < width / 2 {\n                pixels[i] = 0;\n                pixels[i + 1] = 0;\n                pixels[i + 2] = 255;\n            } else {\n                pixels[i] = 255;\n                pixels[i + 1] = 255;\n                pixels[i + 2] = 0;\n            }\n        }\n    }\n    pixels.as_ptr()\n}\n",
+					"genMs": 81510,
+					"tokens": 93,
+					"promptTokens": 413
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            if x < width / 2 {\n                pixels[i] = 0;\n                pixels[i + 1] = 0;\n                pixels[i + 2] = 255;\n            } else {\n                pixels[i] = 255;\n                pixels[i + 1] = 255;\n                pixels[i + 2] = 0;\n            }\n        }\n    }\n    pixels.as_ptr()\n}\n"
+		},
+		{
+			"id": "border",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 255; // White\n            pixels[i + 1] = 255; // White\n            pixels[i + 2] = 255; // White\n            pixels[i + 3] = 255; // White\n        }\n    }\n    pixels.as_ptr()\n}\n",
+					"genMs": 75165,
+					"tokens": 73,
+					"promptTokens": 396
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "wrong",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 255; // White\n            pixels[i + 1] = 255; // White\n            pixels[i + 2] = 255; // White\n            pixels[i + 3] = 255; // White\n        }\n    }\n    pixels.as_ptr()\n}\n"
+		},
+		{
+			"id": "diagonal",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 255;\n            pixels[i + 1] = 255;\n            pixels[i + 2] = 255;\n            pixels[i + 3] = 255;\n        }\n    }\n    pixels.as_ptr()\n}\n",
+					"genMs": 77223,
+					"tokens": 61,
+					"promptTokens": 397
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "wrong",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 255;\n            pixels[i + 1] = 255;\n            pixels[i + 2] = 255;\n            pixels[i + 3] = 255;\n        }\n    }\n    pixels.as_ptr()\n}\n"
+		},
+		{
+			"id": "circle",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 255; // White\n            pixels[i + 1] = 255; // White\n            pixels[i + 2] = 255; // White\n            pixels[i + 3] = 255; // White\n        }\n    }\n    pixels.as_ptr()\n}\n",
+					"genMs": 75763,
+					"tokens": 73,
+					"promptTokens": 405
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "wrong",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = 255; // White\n            pixels[i + 1] = 255; // White\n            pixels[i + 2] = 255; // White\n            pixels[i + 3] = 255; // White\n        }\n    }\n    pixels.as_ptr()\n}\n"
+		},
+		{
+			"id": "clock",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = (t_ms % 256) as u8;\n            pixels[i + 1] = (t_ms % 256) as u8;\n            pixels[i + 2] = (t_ms % 256) as u8;\n            pixels[i + 3] = 255;\n        }\n    }\n    pixels.as_ptr()\n}\n",
+					"genMs": 78731,
+					"tokens": 85,
+					"promptTokens": 405
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            pixels[i] = (t_ms % 256) as u8;\n            pixels[i + 1] = (t_ms % 256) as u8;\n            pixels[i + 2] = (t_ms % 256) as u8;\n            pixels[i + 3] = 255;\n        }\n    }\n    pixels.as_ptr()\n}\n"
+		}
+	]
+}
