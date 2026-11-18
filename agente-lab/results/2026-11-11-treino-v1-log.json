@@ -1,0 +1,132 @@
+{
+	"base": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+	"rank": 16,
+	"lr": 0.0001,
+	"epochs": 1,
+	"trainable": 8798208,
+	"examples": 426,
+	"heldSeeds": [
+		"chunks_of",
+		"index_of",
+		"pangram",
+		"swap_case",
+		"tally"
+	],
+	"heldExamples": 24,
+	"threads": 4,
+	"steps": [
+		{
+			"step": 1,
+			"loss": 0.5374,
+			"seconds": 2
+		},
+		{
+			"step": 20,
+			"loss": 0.2387,
+			"seconds": 1139
+		},
+		{
+			"step": 40,
+			"loss": 0.1311,
+			"seconds": 1227
+		},
+		{
+			"step": 60,
+			"loss": 0.0933,
+			"seconds": 1315
+		},
+		{
+			"step": 80,
+			"loss": 0.0923,
+			"seconds": 1395
+		},
+		{
+			"step": 100,
+			"loss": 0.0741,
+			"seconds": 1491
+		},
+		{
+			"step": 120,
+			"loss": 0.0472,
+			"seconds": 1579
+		},
+		{
+			"step": 140,
+			"loss": 0.0471,
+			"seconds": 1684
+		},
+		{
+			"step": 160,
+			"loss": 0.0457,
+			"seconds": 1772
+		},
+		{
+			"step": 180,
+			"loss": 0.0376,
+			"seconds": 1857
+		},
+		{
+			"step": 200,
+			"loss": 0.0252,
+			"seconds": 1914
+		},
+		{
+			"step": 220,
+			"loss": 0.0476,
+			"seconds": 2014
+		},
+		{
+			"step": 240,
+			"loss": 0.0326,
+			"seconds": 2121
+		},
+		{
+			"step": 260,
+			"loss": 0.0353,
+			"seconds": 2214
+		},
+		{
+			"step": 280,
+			"loss": 0.0295,
+			"seconds": 2311
+		},
+		{
+			"step": 300,
+			"loss": 0.0221,
+			"seconds": 2404
+		},
+		{
+			"step": 320,
+			"loss": 0.0164,
+			"seconds": 2503
+		},
+		{
+			"step": 340,
+			"loss": 0.0147,
+			"seconds": 2595
+		},
+		{
+			"step": 360,
+			"loss": 0.0127,
+			"seconds": 2676
+		},
+		{
+			"step": 380,
+			"loss": 0.0102,
+			"seconds": 2769
+		},
+		{
+			"step": 400,
+			"loss": 0.0069,
+			"seconds": 2847
+		},
+		{
+			"step": 420,
+			"loss": 0.0048,
+			"seconds": 2937
+		}
+	],
+	"heldBefore": 0.11326888808980584,
+	"heldAfter": 0.05328053203993477,
+	"seconds": 2987
+}

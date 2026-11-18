@@ -1,0 +1,808 @@
+{
+	"summary": {
+		"model": "v4-q4_0.gguf",
+		"calls": 1,
+		"seed": 2,
+		"temp": 0.3,
+		"few": false,
+		"shard": "0/1",
+		"tasks": 41,
+		"pass": 13,
+		"firstTry": 11,
+		"passFn": 12,
+		"fn": 32,
+		"passTile": 1,
+		"tile": 9,
+		"tokensPerSecond": 4.7,
+		"secondsPerTask": 20,
+		"loadMs": 4474
+	},
+	"tasks": [
+		{
+			"id": "fib",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn fib(n: u32) -> u64 {\n    match n {\n        0 => 0,\n        1 => 1,\n        _ => {\n            let mut a = 0;\n            let mut b = 1;\n            let mut fib = 0;\n            for _ in 2..=n {\n                fib = a + b;\n                a = b;\n                b = fib;\n            }\n            fib\n        }\n    }\n}\n",
+					"genMs": 20750,
+					"tokens": 98,
+					"promptTokens": 105
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "pub fn fib(n: u32) -> u64 {\n    match n {\n        0 => 0,\n        1 => 1,\n        _ => {\n            let mut a = 0;\n            let mut b = 1;\n            let mut fib = 0;\n            for _ in 2..=n {\n                fib = a + b;\n                a = b;\n                b = fib;\n            }\n            fib\n        }\n    }\n}\n"
+		},
+		{
+			"id": "palindrome",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn is_palindrome(s: &str) -> bool {\n    let mut valid_chars = 0;\n    let mut valid_length = 0;\n    for c in s.chars() {\n        if c.is_alphanumeric() {\n            valid_chars += 1;\n            valid_length += 1;\n        }\n    }\n    valid_length == valid_chars\n}\n",
+					"genMs": 11717,
+					"tokens": 74,
+					"promptTokens": 90
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "test",
+			"code": "pub fn is_palindrome(s: &str) -> bool {\n    let mut valid_chars = 0;\n    let mut valid_length = 0;\n    for c in s.chars() {\n        if c.is_alphanumeric() {\n            valid_chars += 1;\n            valid_length += 1;\n        }\n    }\n    valid_length == valid_chars\n}\n"
+		},
+		{
+			"id": "rle",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn rle(input: &str) -> String {\n    let mut out = Vec::new();\n    for (i, c) in input.char_indices() {\n        if i == 0 || c == input[i - 1] {\n            continue;\n        }\n        out.push_str(&format!(\"{}{}\", i, c));\n    }\n    out.join(\"\")\n}\n",
+					"genMs": 13543,
+					"tokens": 76,
+					"promptTokens": 112
+				},
+				{
+					"what": "autofix",
+					"code": "pub fn rle(input: &str) -> String {\n    let mut out = Vec::new();\n    for (i, c) in input.char_indices() {\n        if i == 0 || c == input[i - 1] {\n            continue;\n        }\n        out.push(&format!(\"{}{}\", i, c));\n    }\n    out.join(\"\")\n}\n"
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 1,
+			"last": "compile",
+			"code": "pub fn rle(input: &str) -> String {\n    let mut out = Vec::new();\n    for (i, c) in input.char_indices() {\n        if i == 0 || c == input[i - 1] {\n            continue;\n        }\n        out.push(&format!(\"{}{}\", i, c));\n    }\n    out.join(\"\")\n}\n"
+		},
+		{
+			"id": "primes",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn primes_up_to(n: u32) -> Vec<u32> {\n    let mut primes: Vec<u32> = Vec::new();\n    for num in 2..=n {\n        if is_prime(num) {\n            primes.push(num);\n        }\n    }\n    primes\n}\n\nfn is_prime(num: u32) -> bool {\n    if num <= 1 {\n        return false;\n    }\n    for i in 2..=((num as f64).sqrt() as u32) {\n        if num.is_multiple_of(i) {\n            return false;\n        }\n    }\n    true\n}\n",
+					"genMs": 18114,
+					"tokens": 132,
+					"promptTokens": 88
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "pub fn primes_up_to(n: u32) -> Vec<u32> {\n    let mut primes: Vec<u32> = Vec::new();\n    for num in 2..=n {\n        if is_prime(num) {\n            primes.push(num);\n        }\n    }\n    primes\n}\n\nfn is_prime(num: u32) -> bool {\n    if num <= 1 {\n        return false;\n    }\n    for i in 2..=((num as f64).sqrt() as u32) {\n        if num.is_multiple_of(i) {\n            return false;\n        }\n    }\n    true\n}\n"
+		},
+		{
+			"id": "wordcount",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::collections::HashMap;\n\npub fn word_count(text: &str) -> HashMap<String, usize> {\n    let mut counts: HashMap<String, usize> = HashMap::new();\n    for word in text.split_whitespace().map(|s| s.to_lowercase()) {\n        *counts.entry(word).or_insert(0) += 1;\n    }\n    counts\n}\n",
+					"genMs": 13239,
+					"tokens": 77,
+					"promptTokens": 93
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "use std::collections::HashMap;\n\npub fn word_count(text: &str) -> HashMap<String, usize> {\n    let mut counts: HashMap<String, usize> = HashMap::new();\n    for word in text.split_whitespace().map(|s| s.to_lowercase()) {\n        *counts.entry(word).or_insert(0) += 1;\n    }\n    counts\n}\n"
+		},
+		{
+			"id": "gcd",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn gcd(a: u64, b: u64) -> u64 {\n    if b == 0 {\n        return a;\n    }\n    gcd(b, a % b)\n}\n",
+					"genMs": 8086,
+					"tokens": 43,
+					"promptTokens": 91
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "pub fn gcd(a: u64, b: u64) -> u64 {\n    if b == 0 {\n        return a;\n    }\n    gcd(b, a % b)\n}\n"
+		},
+		{
+			"id": "lcm",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn lcm(a: u64, b: u64) -> u64 {\n    if a == 0 || b == 0 {\n        return 0;\n    }\n    (a * b) / gcd(a, b)\n}\n\nfn gcd(a: u64, b: u64) -> u64 {\n    if b == 0 {\n        return a;\n    }\n    gcd(b, a % b)\n}\n",
+					"genMs": 15276,
+					"tokens": 94,
+					"promptTokens": 94
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "pub fn lcm(a: u64, b: u64) -> u64 {\n    if a == 0 || b == 0 {\n        return 0;\n    }\n    (a * b) / gcd(a, b)\n}\n\nfn gcd(a: u64, b: u64) -> u64 {\n    if b == 0 {\n        return a;\n    }\n    gcd(b, a % b)\n}\n"
+		},
+		{
+			"id": "reverse_words",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn reverse_words(s: &str) -> String {\n    let mut words: Vec<&str> = s.split_whitespace().collect();\n    words.reverse();\n    words.join(\" \")\n}\n",
+					"genMs": 7334,
+					"tokens": 39,
+					"promptTokens": 88
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "pub fn reverse_words(s: &str) -> String {\n    let mut words: Vec<&str> = s.split_whitespace().collect();\n    words.reverse();\n    words.join(\" \")\n}\n"
+		},
+		{
+			"id": "anagram",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn is_anagram(a: &str, b: &str) -> bool {\n    a.to_lowercase().chars().filter(|c| c.is_ascii_lowercase()).collect::<HashSet<_>>().len() == b.to_lowercase().chars().filter(|c| c.is_ascii_lowercase()).collect::<HashSet<_>>().len()\n}\n",
+					"genMs": 12169,
+					"tokens": 68,
+					"promptTokens": 94
+				},
+				{
+					"what": "autofix",
+					"code": "use std::collections::HashSet;\n\npub fn is_anagram(a: &str, b: &str) -> bool {\n    a.to_lowercase().chars().filter(|c| c.is_ascii_lowercase()).collect::<HashSet<_>>().len() == b.to_lowercase().chars().filter(|c| c.is_ascii_lowercase()).collect::<HashSet<_>>().len()\n}\n"
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 1,
+			"last": "test",
+			"code": "use std::collections::HashSet;\n\npub fn is_anagram(a: &str, b: &str) -> bool {\n    a.to_lowercase().chars().filter(|c| c.is_ascii_lowercase()).collect::<HashSet<_>>().len() == b.to_lowercase().chars().filter(|c| c.is_ascii_lowercase()).collect::<HashSet<_>>().len()\n}\n"
+		},
+		{
+			"id": "sum_digits",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn sum_digits(n: u64) -> u32 {\n    let mut total = 0;\n    let mut number = n;\n    while number > 0 {\n        total += number % 10;\n        number /= 10;\n    }\n    total\n}\n",
+					"genMs": 10444,
+					"tokens": 60,
+					"promptTokens": 81
+				},
+				{
+					"what": "autofix",
+					"code": "pub fn sum_digits(n: u64) -> u32 {\n    let mut total = 0;\n    let mut number = n;\n    while number > 0 {\n        total += number % 10;\n        number /= 10;\n    }\n    total.try_into().unwrap()\n}\n"
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 1,
+			"last": "pass",
+			"code": "pub fn sum_digits(n: u64) -> u32 {\n    let mut total = 0;\n    let mut number = n;\n    while number > 0 {\n        total += number % 10;\n        number /= 10;\n    }\n    total.try_into().unwrap()\n}\n"
+		},
+		{
+			"id": "factorial",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn factorial(n: u32) -> Option<u64> {\n    if n == 0 || n == 1 {\n        return Some(1);\n    }\n    let mut total = 1;\n    for i in 2..=n {\n        total *= i;\n    }\n    Some(total)\n}\n",
+					"genMs": 11917,
+					"tokens": 67,
+					"promptTokens": 88
+				},
+				{
+					"what": "autofix",
+					"code": "pub fn factorial(n: u32) -> Option<u64> {\n    if n == 0 || n == 1 {\n        return Some(1);\n    }\n    let mut total = 1;\n    for i in 2..=n {\n        total *= i;\n    }\n    Some(total.into())\n}\n"
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 1,
+			"last": "test",
+			"code": "pub fn factorial(n: u32) -> Option<u64> {\n    if n == 0 || n == 1 {\n        return Some(1);\n    }\n    let mut total = 1;\n    for i in 2..=n {\n        total *= i;\n    }\n    Some(total.into())\n}\n"
+		},
+		{
+			"id": "fizzbuzz",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn fizzbuzz(n: u32) -> Vec<String> {\n    let mut out = Vec::new();\n    for i in 1..=n {\n        if i % 3 == 0 && i % 5 == 0 {\n            out.push(\"FizzBuzz\".to_string());\n        } else if i % 3 == 0 {\n            out.push(\"Fizz\".to_string());\n        } else if i % 5 == 0 {\n            out.push(\"Buzz\".to_string());\n        } else {\n            out.push(i.to_string());\n        }\n    }\n    out\n}\n",
+					"genMs": 20961,
+					"tokens": 124,
+					"promptTokens": 112
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "pub fn fizzbuzz(n: u32) -> Vec<String> {\n    let mut out = Vec::new();\n    for i in 1..=n {\n        if i % 3 == 0 && i % 5 == 0 {\n            out.push(\"FizzBuzz\".to_string());\n        } else if i % 3 == 0 {\n            out.push(\"Fizz\".to_string());\n        } else if i % 5 == 0 {\n            out.push(\"Buzz\".to_string());\n        } else {\n            out.push(i.to_string());\n        }\n    }\n    out\n}\n"
+		},
+		{
+			"id": "max_subarray",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn max_subarray(v: &[i64]) -> i64 {\n    if v.is_empty() {\n        return 0;\n    }\n\n    let mut current_max = v[0];\n    let mut global_max = v[0];\n\n    for &number in &v[1..] {\n        current_max = current_max.max(number);\n        global_max = global_max.max(current_max + number);\n    }\n\n    global_max\n}\n",
+					"genMs": 13310,
+					"tokens": 92,
+					"promptTokens": 95
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "test",
+			"code": "pub fn max_subarray(v: &[i64]) -> i64 {\n    if v.is_empty() {\n        return 0;\n    }\n\n    let mut current_max = v[0];\n    let mut global_max = v[0];\n\n    for &number in &v[1..] {\n        current_max = current_max.max(number);\n        global_max = global_max.max(current_max + number);\n    }\n\n    global_max\n}\n"
+		},
+		{
+			"id": "binary_search",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn find(v: &[i32], target: i32) -> Option<usize> {\n    let low = 0;\n    let high = v.len() - 1;\n\n    while low <= high {\n        let mid = (low + high) / 2;\n        let value = v[mid];\n\n        if value == target {\n            return Some(mid);\n        } else if value < target {\n            low = mid + 1;\n        } else {\n            high = mid - 1;\n        }\n    }\n\n    None\n}\n",
+					"genMs": 16720,
+					"tokens": 113,
+					"promptTokens": 99
+				},
+				{
+					"what": "autofix",
+					"code": "pub fn find(v: &[i32], target: i32) -> Option<usize> {\n    let mut low = 0;\n    let mut high = v.len() - 1;\n\n    while low <= high {\n        let mid = (low + high) / 2;\n        let value = v[mid];\n\n        if value == target {\n            return Some(mid);\n        } else if value < target {\n            low = mid + 1;\n        } else {\n            high = mid - 1;\n        }\n    }\n\n    None\n}\n"
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 1,
+			"last": "test",
+			"code": "pub fn find(v: &[i32], target: i32) -> Option<usize> {\n    let mut low = 0;\n    let mut high = v.len() - 1;\n\n    while low <= high {\n        let mid = (low + high) / 2;\n        let value = v[mid];\n\n        if value == target {\n            return Some(mid);\n        } else if value < target {\n            low = mid + 1;\n        } else {\n            high = mid - 1;\n        }\n    }\n\n    None\n}\n"
+		},
+		{
+			"id": "to_binary",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn to_binary(n: u32) -> String {\n    let mut binary = String::new();\n    if n == 0 {\n        return \"0\".to_string();\n    }\n    while n > 0 {\n        let remainder = n % 2;\n        binary = format!(\"{remainder}{binary}\");\n        n /= 2;\n    }\n    binary\n}\n",
+					"genMs": 11903,
+					"tokens": 77,
+					"promptTokens": 90
+				},
+				{
+					"what": "autofix",
+					"code": "pub fn to_binary(mut n: u32) -> String {\n    let mut binary = String::new();\n    if n == 0 {\n        return \"0\".to_string();\n    }\n    while n > 0 {\n        let remainder = n % 2;\n        binary = format!(\"{remainder}{binary}\");\n        n /= 2;\n    }\n    binary\n}\n"
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 1,
+			"last": "pass",
+			"code": "pub fn to_binary(mut n: u32) -> String {\n    let mut binary = String::new();\n    if n == 0 {\n        return \"0\".to_string();\n    }\n    while n > 0 {\n        let remainder = n % 2;\n        binary = format!(\"{remainder}{binary}\");\n        n /= 2;\n    }\n    binary\n}\n"
+		},
+		{
+			"id": "from_roman",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn from_roman(s: &str) -> Option<u32> {\n    let mut value = 0;\n    let mut roman = [\n        ('M', 1000),\n        ('D', 500),\n        ('C', 100),\n        ('L', 50),\n        ('X', 10),\n        ('V', 5),\n        ('I', 1),\n    ];\n\n    for (symbol, value) in roman.iter().rev() {\n        if let Some(n) = value.checked_sub(value_of(symbol)) {\n            value -= n;\n        } else {\n            return None;\n        }\n    }\n\n    Some(value)\n}\n\nfn value_of(c: char) -> Option<u32> {\n    match c {\n        'M' => Some(1000),\n        'D' => Some(500),\n        'C' => Some(100),\n        'L' => Some(50),\n        'X' => Some(10),\n        'V' => Some(5),\n        'I' => Some(1),\n        _ => None,\n    }\n}\n",
+					"genMs": 35817,
+					"tokens": 241,
+					"promptTokens": 110
+				},
+				{
+					"what": "autofix",
+					"code": "pub fn from_roman(s: &str) -> Option<u32> {\n    let mut value = 0;\n    let mut roman = [\n        ('M', 1000),\n        ('D', 500),\n        ('C', 100),\n        ('L', 50),\n        ('X', 10),\n        ('V', 5),\n        ('I', 1),\n    ];\n\n    for (symbol, value) in roman.iter().rev() {\n        if let Some(n) = value.checked_sub(value_of(*symbol)) {\n            value -= n;\n        } else {\n            return None;\n        }\n    }\n\n    Some(value)\n}\n\nfn value_of(c: char) -> Option<u32> {\n    match c {\n        'M' => Some(1000),\n        'D' => Some(500),\n        'C' => Some(100),\n        'L' => Some(50),\n        'X' => Some(10),\n        'V' => Some(5),\n        'I' => Some(1),\n        _ => None,\n    }\n}\n"
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 1,
+			"last": "compile",
+			"code": "pub fn from_roman(s: &str) -> Option<u32> {\n    let mut value = 0;\n    let mut roman = [\n        ('M', 1000),\n        ('D', 500),\n        ('C', 100),\n        ('L', 50),\n        ('X', 10),\n        ('V', 5),\n        ('I', 1),\n    ];\n\n    for (symbol, value) in roman.iter().rev() {\n        if let Some(n) = value.checked_sub(value_of(*symbol)) {\n            value -= n;\n        } else {\n            return None;\n        }\n    }\n\n    Some(value)\n}\n\nfn value_of(c: char) -> Option<u32> {\n    match c {\n        'M' => Some(1000),\n        'D' => Some(500),\n        'C' => Some(100),\n        'L' => Some(50),\n        'X' => Some(10),\n        'V' => Some(5),\n        'I' => Some(1),\n        _ => None,\n    }\n}\n"
+		},
+		{
+			"id": "caesar",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn caesar(s: &str, shift: u8) -> String {\n    let alphabet = \"abcdefghijklmnopqrstuvwxyz\";\n    let mut out = String::new();\n    for c in s.chars() {\n        if let Some(&next) = alphabet.find(c) {\n            let offset = (c as u8 - alphabet[0] as u8 + shift) % 26;\n            out.push(alphabet[(offset + 26 - offset) % 26] as char);\n        } else {\n            out.push(c);\n        }\n    }\n    out\n}\n",
+					"genMs": 19123,
+					"tokens": 119,
+					"promptTokens": 99
+				},
+				{
+					"what": "autofix",
+					"code": "pub fn caesar(s: &str, shift: u8) -> String {\n    let alphabet = \"abcdefghijklmnopqrstuvwxyz\";\n    let mut out = String::new();\n    for c in s.chars() {\n        if let Some(next) = alphabet.find(c) {\n            let offset = (c as u8 - alphabet[0] as u8 + shift) % 26;\n            out.push(alphabet[(offset + 26 - offset) % 26] as char);\n        } else {\n            out.push(c);\n        }\n    }\n    out\n}\n"
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 1,
+			"last": "compile",
+			"code": "pub fn caesar(s: &str, shift: u8) -> String {\n    let alphabet = \"abcdefghijklmnopqrstuvwxyz\";\n    let mut out = String::new();\n    for c in s.chars() {\n        if let Some(next) = alphabet.find(c) {\n            let offset = (c as u8 - alphabet[0] as u8 + shift) % 26;\n            out.push(alphabet[(offset + 26 - offset) % 26] as char);\n        } else {\n            out.push(c);\n        }\n    }\n    out\n}\n"
+		},
+		{
+			"id": "dedup",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn dedup(v: &[i32]) -> Vec<i32> {\n    let mut out = Vec::with_capacity(v.len());\n    for (i, &x) in v.iter().enumerate().skip(1) {\n        if x != v[i - 1] {\n            out.push(x);\n        }\n    }\n    out\n}\n",
+					"genMs": 13088,
+					"tokens": 74,
+					"promptTokens": 85
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "test",
+			"code": "pub fn dedup(v: &[i32]) -> Vec<i32> {\n    let mut out = Vec::with_capacity(v.len());\n    for (i, &x) in v.iter().enumerate().skip(1) {\n        if x != v[i - 1] {\n            out.push(x);\n        }\n    }\n    out\n}\n"
+		},
+		{
+			"id": "merge_sorted",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn merge_sorted(a: &[i32], b: &[i32]) -> Vec<i32> {\n    let mut merged: Vec<i32> = Vec::with_capacity(a.len() + b.len());\n    let mut i = 0;\n    let mut j = 0;\n    while i < a.len() && j < b.len() {\n        if a[i] < b[j] {\n            merged.push(a[i]);\n            i += 1;\n        } else {\n            merged.push(b[j]);\n            j += 1;\n        }\n    }\n    while i < a.len() {\n        merged.push(a[i]);\n        i += 1;\n    }\n    while j < b.len() {\n        merged.push(b[j]);\n        j += 1;\n    }\n    merged\n}\n",
+					"genMs": 23668,
+					"tokens": 168,
+					"promptTokens": 89
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "pub fn merge_sorted(a: &[i32], b: &[i32]) -> Vec<i32> {\n    let mut merged: Vec<i32> = Vec::with_capacity(a.len() + b.len());\n    let mut i = 0;\n    let mut j = 0;\n    while i < a.len() && j < b.len() {\n        if a[i] < b[j] {\n            merged.push(a[i]);\n            i += 1;\n        } else {\n            merged.push(b[j]);\n            j += 1;\n        }\n    }\n    while i < a.len() {\n        merged.push(a[i]);\n        i += 1;\n    }\n    while j < b.len() {\n        merged.push(b[j]);\n        j += 1;\n    }\n    merged\n}\n"
+		},
+		{
+			"id": "capitalize",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn capitalize_words(s: &str) -> String {\n    let mut out = Vec::new();\n    for word in s.split_whitespace() {\n        if let Some(first) = word.chars().next() {\n            out.push(first.to_uppercase());\n        }\n        out.push_str(word);\n    }\n    out.join(\" \")\n}\n",
+					"genMs": 11500,
+					"tokens": 68,
+					"promptTokens": 91
+				},
+				{
+					"what": "autofix",
+					"code": "pub fn capitalize_words(s: &str) -> String {\n    let mut out = Vec::new();\n    for word in s.split_whitespace() {\n        if let Some(first) = word.chars().next() {\n            out.push(first.to_uppercase());\n        }\n        out.push(word);\n    }\n    out.join(\" \")\n}\n"
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 1,
+			"last": "compile",
+			"code": "pub fn capitalize_words(s: &str) -> String {\n    let mut out = Vec::new();\n    for word in s.split_whitespace() {\n        if let Some(first) = word.chars().next() {\n            out.push(first.to_uppercase());\n        }\n        out.push(word);\n    }\n    out.join(\" \")\n}\n"
+		},
+		{
+			"id": "balanced",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn is_balanced(s: &str) -> bool {\n    let mut balance = 0;\n    for c in s.chars() {\n        if c == '(' || c == '[' || c == '{' {\n            balance += 1;\n        } else if c == ')' || c == ']' || c == '} {\n            balance -= 1;\n        }\n        if balance < 0 {\n            return false;\n        }\n    }\n    balance == 0\n}\n",
+					"genMs": 14280,
+					"tokens": 98,
+					"promptTokens": 90
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "compile",
+			"code": "pub fn is_balanced(s: &str) -> bool {\n    let mut balance = 0;\n    for c in s.chars() {\n        if c == '(' || c == '[' || c == '{' {\n            balance += 1;\n        } else if c == ')' || c == ']' || c == '} {\n            balance -= 1;\n        }\n        if balance < 0 {\n            return false;\n        }\n    }\n    balance == 0\n}\n"
+		},
+		{
+			"id": "collatz",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn collatz_steps(n: u64) -> u32 {\n    if n == 1 {\n        return 0;\n    }\n    let steps = 1 + collatz_steps(n / 2);\n    if n % 2 == 0 {\n        steps\n    } else {\n        steps + 1\n    }\n}\n",
+					"genMs": 12977,
+					"tokens": 72,
+					"promptTokens": 121
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "test",
+			"code": "pub fn collatz_steps(n: u64) -> u32 {\n    if n == 1 {\n        return 0;\n    }\n    let steps = 1 + collatz_steps(n / 2);\n    if n % 2 == 0 {\n        steps\n    } else {\n        steps + 1\n    }\n}\n"
+		},
+		{
+			"id": "median",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn median(v: &[f64]) -> Option<f64> {\n    let n = v.len();\n    if n == 0 {\n        return None;\n    }\n    let mut sorted = v.to_owned();\n    sorted.sort();\n    let mid = n / 2;\n    if n % 2 == 1 {\n        return Some(sorted[mid]);\n    } else {\n        Some((sorted[mid - 1] + sorted[mid]) / 2.0)\n    }\n}\n",
+					"genMs": 15519,
+					"tokens": 102,
+					"promptTokens": 105
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "compile",
+			"code": "pub fn median(v: &[f64]) -> Option<f64> {\n    let n = v.len();\n    if n == 0 {\n        return None;\n    }\n    let mut sorted = v.to_owned();\n    sorted.sort();\n    let mid = n / 2;\n    if n % 2 == 1 {\n        return Some(sorted[mid]);\n    } else {\n        Some((sorted[mid - 1] + sorted[mid]) / 2.0)\n    }\n}\n"
+		},
+		{
+			"id": "transpose",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn transpose(m: &[Vec<i32>]) -> Vec<Vec<i32>> {\n    let rows = m.len();\n    if rows == 0 {\n        return Vec::new();\n    }\n\n    let mut transposed: Vec<Vec<i32>> = Vec::with_capacity(rows);\n    for _ in 0..rows {\n        transposed.push(vec![0; rows]);\n    }\n\n    for (i, row) in m.iter().enumerate().take(rows) {\n        for (j, value) in row.iter().enumerate().take(rows) {\n            transposed[j][i] = *value;\n        }\n    }\n\n    transposed\n}\n",
+					"genMs": 18895,
+					"tokens": 137,
+					"promptTokens": 95
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "test",
+			"code": "pub fn transpose(m: &[Vec<i32>]) -> Vec<Vec<i32>> {\n    let rows = m.len();\n    if rows == 0 {\n        return Vec::new();\n    }\n\n    let mut transposed: Vec<Vec<i32>> = Vec::with_capacity(rows);\n    for _ in 0..rows {\n        transposed.push(vec![0; rows]);\n    }\n\n    for (i, row) in m.iter().enumerate().take(rows) {\n        for (j, value) in row.iter().enumerate().take(rows) {\n            transposed[j][i] = *value;\n        }\n    }\n\n    transposed\n}\n"
+		},
+		{
+			"id": "hex_to_rgb",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn hex_to_rgb(s: &str) -> Option<(u8, u8, u8)> {\n    if s.len() != 7 || s.chars().next().unwrap() != '#' {\n        return None;\n    }\n\n    let (r, g, b) = s\n        .chars()\n        .skip(1)\n        .map(|c| c.to_digit(16).unwrap())\n        .collect::<Vec<u8>>();\n\n    if r > 255 || g > 255 || b > 255 {\n        return None;\n    }\n\n    Some((r, g, b))\n}\n",
+					"genMs": 20903,
+					"tokens": 133,
+					"promptTokens": 102
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "compile",
+			"code": "pub fn hex_to_rgb(s: &str) -> Option<(u8, u8, u8)> {\n    if s.len() != 7 || s.chars().next().unwrap() != '#' {\n        return None;\n    }\n\n    let (r, g, b) = s\n        .chars()\n        .skip(1)\n        .map(|c| c.to_digit(16).unwrap())\n        .collect::<Vec<u8>>();\n\n    if r > 255 || g > 255 || b > 255 {\n        return None;\n    }\n\n    Some((r, g, b))\n}\n"
+		},
+		{
+			"id": "leap_year",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn is_leap_year(year: u32) -> bool {\n    if year % 400 == 0 {\n        return true;\n    }\n    if year % 100 == 0 {\n        return false;\n    }\n    if year % 4 == 0 {\n        return true;\n    }\n    false\n}\n",
+					"genMs": 11810,
+					"tokens": 72,
+					"promptTokens": 92
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "pub fn is_leap_year(year: u32) -> bool {\n    if year % 400 == 0 {\n        return true;\n    }\n    if year % 100 == 0 {\n        return false;\n    }\n    if year % 4 == 0 {\n        return true;\n    }\n    false\n}\n"
+		},
+		{
+			"id": "second_largest",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn second_largest(v: &[i32]) -> Option<i32> {\n    let mut unique_values: HashSet<i32> = v.iter().collect();\n    let mut distinct_values: Vec<i32> = unique_values.into_iter().collect();\n    distinct_values.sort();\n    if distinct_values.len() < 2 {\n        return None;\n    }\n    distinct_values.pop();\n    Some(distinct_values.pop().unwrap())\n}\n",
+					"genMs": 15502,
+					"tokens": 92,
+					"promptTokens": 92
+				},
+				{
+					"what": "autofix",
+					"code": "use std::collections::HashSet;\n\npub fn second_largest(v: &[i32]) -> Option<i32> {\n    let mut unique_values: HashSet<i32> = v.iter().collect();\n    let mut distinct_values: Vec<i32> = unique_values.into_iter().collect();\n    distinct_values.sort();\n    if distinct_values.len() < 2 {\n        return None;\n    }\n    distinct_values.pop();\n    Some(distinct_values.pop().unwrap())\n}\n"
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 1,
+			"last": "compile",
+			"code": "use std::collections::HashSet;\n\npub fn second_largest(v: &[i32]) -> Option<i32> {\n    let mut unique_values: HashSet<i32> = v.iter().collect();\n    let mut distinct_values: Vec<i32> = unique_values.into_iter().collect();\n    distinct_values.sort();\n    if distinct_values.len() < 2 {\n        return None;\n    }\n    distinct_values.pop();\n    Some(distinct_values.pop().unwrap())\n}\n"
+		},
+		{
+			"id": "rotate_left",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn rotate_left(v: &[i32], k: usize) -> Vec<i32> {\n    if k == 0 || k >= v.len() {\n        v.to_vec()\n    } else {\n        let k = k % v.len();\n        let mut out = v[k..].to_vec();\n        let mut in_part = v[..k].to_vec();\n        out.append(&mut in_part);\n        out\n    }\n}\n",
+					"genMs": 16102,
+					"tokens": 93,
+					"promptTokens": 102
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "test",
+			"code": "pub fn rotate_left(v: &[i32], k: usize) -> Vec<i32> {\n    if k == 0 || k >= v.len() {\n        v.to_vec()\n    } else {\n        let k = k % v.len();\n        let mut out = v[k..].to_vec();\n        let mut in_part = v[..k].to_vec();\n        out.append(&mut in_part);\n        out\n    }\n}\n"
+		},
+		{
+			"id": "remove_vowels",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn remove_vowels(s: &str) -> String {\n    let mut out = String::new();\n    for c in s.chars() {\n        if ![\"a\", \"e\", \"i\", \"o\", \"u\"].contains(&c.to_lowercase()) {\n            out.push(c);\n        }\n    }\n    out\n}\n",
+					"genMs": 11268,
+					"tokens": 70,
+					"promptTokens": 88
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "compile",
+			"code": "pub fn remove_vowels(s: &str) -> String {\n    let mut out = String::new();\n    for c in s.chars() {\n        if ![\"a\", \"e\", \"i\", \"o\", \"u\"].contains(&c.to_lowercase()) {\n            out.push(c);\n        }\n    }\n    out\n}\n"
+		},
+		{
+			"id": "parse_kv",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn parse_kv(s: &str) -> std::collections::HashMap<String, String> {\n    let mut map: std::collections::HashMap<String, String> = Default::new();\n    for part in s.split(';') {\n        let mut fields = part.split('=');\n        if fields.len() != 2 {\n            continue;\n        }\n        let key = fields.next().unwrap().trim().to_string();\n        let value = fields.next().unwrap().trim().to_string();\n        map.insert(key, value);\n    }\n    map\n}\n",
+					"genMs": 19058,
+					"tokens": 113,
+					"promptTokens": 111
+				},
+				{
+					"what": "autofix",
+					"code": "pub fn parse_kv(s: &str) -> std::collections::HashMap<String, String> {\n    let mut map: std::collections::HashMap<String, String> = <dyn Default>::new();\n    for part in s.split(';') {\n        let mut fields = part.split('=');\n        if fields.len() != 2 {\n            continue;\n        }\n        let key = fields.next().unwrap().trim().to_string();\n        let value = fields.next().unwrap().trim().to_string();\n        map.insert(key, value);\n    }\n    map\n}\n"
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 1,
+			"last": "compile",
+			"code": "pub fn parse_kv(s: &str) -> std::collections::HashMap<String, String> {\n    let mut map: std::collections::HashMap<String, String> = <dyn Default>::new();\n    for part in s.split(';') {\n        let mut fields = part.split('=');\n        if fields.len() != 2 {\n            continue;\n        }\n        let key = fields.next().unwrap().trim().to_string();\n        let value = fields.next().unwrap().trim().to_string();\n        map.insert(key, value);\n    }\n    map\n}\n"
+		},
+		{
+			"id": "running_sum",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn running_sum(v: &[i32]) -> Vec<i32> {\n    let mut running_sum: i32 = 0;\n    let mut out: Vec<i32> = Vec::with_capacity(v.len());\n    for &x in v {\n        running_sum += x;\n        out.push(running_sum);\n    }\n    out\n}\n",
+					"genMs": 13044,
+					"tokens": 76,
+					"promptTokens": 90
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "pub fn running_sum(v: &[i32]) -> Vec<i32> {\n    let mut running_sum: i32 = 0;\n    let mut out: Vec<i32> = Vec::with_capacity(v.len());\n    for &x in v {\n        running_sum += x;\n        out.push(running_sum);\n    }\n    out\n}\n"
+		},
+		{
+			"id": "count_char",
+			"kind": "fn",
+			"steps": [
+				{
+					"what": "write",
+					"code": "pub fn count_char(s: &str, c: char) -> usize {\n    let mut count = 0;\n    for &c in s.as_bytes() {\n        if c == c {\n            count += 1;\n        }\n    }\n    count\n}\n",
+					"genMs": 9857,
+					"tokens": 55,
+					"promptTokens": 83
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "test",
+			"code": "pub fn count_char(s: &str, c: char) -> usize {\n    let mut count = 0;\n    for &c in s.as_bytes() {\n        if c == c {\n            count += 1;\n        }\n    }\n    count\n}\n"
+		},
+		{
+			"id": "gradient",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            let shade = if x == 0 || x == width - 1 { 0 } else { 255 };\n            pixels[i..i + 4].copy_from_slice(&[shade, 0, 0, 255]);\n        }\n    }\n    pixels.as_ptr()\n}\n",
+					"genMs": 34547,
+					"tokens": 65,
+					"promptTokens": 405
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "wrong",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            let shade = if x == 0 || x == width - 1 { 0 } else { 255 };\n            pixels[i..i + 4].copy_from_slice(&[shade, 0, 0, 255]);\n        }\n    }\n    pixels.as_ptr()\n}\n"
+		},
+		{
+			"id": "checker",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            let on = (x % 2 == 0 && y % 2 == 0) || (x % 2 == 1 && y % 2 == 1);\n            pixels[i] = 0;\n            pixels[i + 1] = if on { 255 } else { 0 };\n            pixels[i + 2] = if on { 255 } else { 0 };\n            pixels[i + 3] = 255;\n        }\n    }\n    pixels.as_ptr()\n}\n",
+					"genMs": 42596,
+					"tokens": 113,
+					"promptTokens": 402
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "wrong",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            let on = (x % 2 == 0 && y % 2 == 0) || (x % 2 == 1 && y % 2 == 1);\n            pixels[i] = 0;\n            pixels[i + 1] = if on { 255 } else { 0 };\n            pixels[i + 2] = if on { 255 } else { 0 };\n            pixels[i + 3] = 255;\n        }\n    }\n    pixels.as_ptr()\n}\n"
+		},
+		{
+			"id": "solid",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            let shade = if x < width / 2 && y < height / 2 { 255 } else { 0 };\n            pixels[i..i + 4].copy_from_slice(&[shade, shade, shade, 255]);\n        }\n    }\n    pixels.as_ptr()\n}\n",
+					"genMs": 33489,
+					"tokens": 65,
+					"promptTokens": 398
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "wrong",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            let shade = if x < width / 2 && y < height / 2 { 255 } else { 0 };\n            pixels[i..i + 4].copy_from_slice(&[shade, shade, shade, 255]);\n        }\n    }\n    pixels.as_ptr()\n}\n"
+		},
+		{
+			"id": "stripes",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            let on = (x % 2 == 0) != (y % 2 == 0);\n            pixels[i] = 255;\n            pixels[i + 1] = if on { 255 } else { 0 };\n            pixels[i + 2] = if on { 255 } else { 0 };\n            pixels[i + 3] = 255;\n        }\n    }\n    pixels.as_ptr()\n}\n",
+					"genMs": 36622,
+					"tokens": 99,
+					"promptTokens": 397
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "wrong",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            let on = (x % 2 == 0) != (y % 2 == 0);\n            pixels[i] = 255;\n            pixels[i + 1] = if on { 255 } else { 0 };\n            pixels[i + 2] = if on { 255 } else { 0 };\n            pixels[i + 3] = 255;\n        }\n    }\n    pixels.as_ptr()\n}\n"
+		},
+		{
+			"id": "halves",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            let on = (x < width / 2) as u32;\n            let on = on << 1;\n            let on = on << 2;\n            let on = on << 4;\n            let on = on << 8;\n            let on = on << 16;\n            pixels[i..i + 4].copy_from_slice(&[255, 0, 0, on]);\n        }\n    }\n    pixels.as_ptr()\n}\n",
+					"genMs": 37768,
+					"tokens": 100,
+					"promptTokens": 413
+				},
+				{
+					"what": "autofix",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            let on = (x < width / 2) as u32;\n            let on = on << 1;\n            let on = on << 2;\n            let on = on << 4;\n            let on = on << 8;\n            let on = on << 16;\n            pixels[i..i + 4].copy_from_slice(&[255, 0, 0, on.try_into().unwrap()]);\n        }\n    }\n    pixels.as_ptr()\n}\n"
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 1,
+			"last": "run",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            let on = (x < width / 2) as u32;\n            let on = on << 1;\n            let on = on << 2;\n            let on = on << 4;\n            let on = on << 8;\n            let on = on << 16;\n            pixels[i..i + 4].copy_from_slice(&[255, 0, 0, on.try_into().unwrap()]);\n        }\n    }\n    pixels.as_ptr()\n}\n"
+		},
+		{
+			"id": "border",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            let on = x == 0 || x == width - 1 || y == height - 1 || y == height - 1;\n            pixels[i] = 255;\n            pixels[i + 1] = if on { 0 } else { 255 };\n            pixels[i + 2] = if on { 0 } else { 0 };\n            pixels[i + 3] = 255;\n        }\n    }\n    pixels.as_ptr()\n}\n",
+					"genMs": 38360,
+					"tokens": 104,
+					"promptTokens": 396
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "wrong",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            let on = x == 0 || x == width - 1 || y == height - 1 || y == height - 1;\n            pixels[i] = 255;\n            pixels[i + 1] = if on { 0 } else { 255 };\n            pixels[i + 2] = if on { 0 } else { 0 };\n            pixels[i + 3] = 255;\n        }\n    }\n    pixels.as_ptr()\n}\n"
+		},
+		{
+			"id": "diagonal",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            let on = x == y;\n            pixels[i] = 255;\n            pixels[i + 1] = pixels[i + 2] = pixels[i + 3] = if on { 255 } else { 0 };\n        }\n    }\n    pixels.as_ptr()\n}\n",
+					"genMs": 31260,
+					"tokens": 64,
+					"promptTokens": 397
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "compile",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            let on = x == y;\n            pixels[i] = 255;\n            pixels[i + 1] = pixels[i + 2] = pixels[i + 3] = if on { 255 } else { 0 };\n        }\n    }\n    pixels.as_ptr()\n}\n"
+		},
+		{
+			"id": "circle",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            let dx = (x as f64 - width as f64 / 2.0) / 10.0;\n            let dy = (y as f64 - height as f64 / 2.0) / 10.0;\n            let level = (dx * dx + dy * dy).sqrt() * 255.0;\n            pixels[i..i + 4].copy_from_slice(&[level, level, level, 255]);\n        }\n    }\n    pixels.as_ptr()\n}\n",
+					"genMs": 38882,
+					"tokens": 117,
+					"promptTokens": 405
+				}
+			],
+			"pass": false,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "compile",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            let dx = (x as f64 - width as f64 / 2.0) / 10.0;\n            let dy = (y as f64 - height as f64 / 2.0) / 10.0;\n            let level = (dx * dx + dy * dy).sqrt() * 255.0;\n            pixels[i..i + 4].copy_from_slice(&[level, level, level, 255]);\n        }\n    }\n    pixels.as_ptr()\n}\n"
+		},
+		{
+			"id": "clock",
+			"kind": "tile",
+			"steps": [
+				{
+					"what": "write",
+					"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            let shade = ((x as usize * 256 + y as usize * 256 + t_ms as usize) % 256) as u8;\n            pixels[i] = shade;\n            pixels[i + 1] = shade;\n            pixels[i + 2] = shade;\n            pixels[i + 3] = 255;\n        }\n    }\n    pixels.as_ptr()\n}\n",
+					"genMs": 37890,
+					"tokens": 89,
+					"promptTokens": 405
+				}
+			],
+			"pass": true,
+			"modelCalls": 1,
+			"autofixes": 0,
+			"last": "pass",
+			"code": "use std::sync::Mutex;\n\n// RGBA pixels, row by row from the top-left: 4 bytes per pixel.\nstatic PIXELS: Mutex<Vec<u8>> = Mutex::new(Vec::new());\nstatic SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));\n\n/// Called once by the host.\n#[unsafe(no_mangle)]\npub extern \"C\" fn init(width: u32, height: u32) {\n    *SIZE.lock().unwrap() = (width as usize, height as usize);\n    PIXELS.lock().unwrap().resize((width * height * 4) as usize, 255);\n}\n\n/// Called every frame by the host. Draws and returns the pixels.\n#[unsafe(no_mangle)]\npub extern \"C\" fn frame(t_ms: u32) -> *const u8 {\n    let (width, height) = *SIZE.lock().unwrap();\n    let mut pixels = PIXELS.lock().unwrap();\n    for y in 0..height {\n        for x in 0..width {\n            let i = (y * width + x) * 4;\n            let shade = ((x as usize * 256 + y as usize * 256 + t_ms as usize) % 256) as u8;\n            pixels[i] = shade;\n            pixels[i + 1] = shade;\n            pixels[i + 2] = shade;\n            pixels[i + 3] = 255;\n        }\n    }\n    pixels.as_ptr()\n}\n"
+		}
+	]
+}

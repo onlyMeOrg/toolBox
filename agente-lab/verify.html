@@ -1,0 +1,36 @@
+<!doctype html><meta charset="utf-8"><pre id="log"></pre>
+<script type="module">
+// Proves every reference solution of the measuring set with the real toolchain: tests pass, pixels match.
+import { TASKS } from './tasks.mjs';
+const R = window.R = { rows: [] };
+const k = new Worker('/agente/build-worker.js', { type: 'module' });
+let job = 0; const waiting = new Map();
+const kready = new Promise((ok, bad) => { k.onmessage = (e) => { const m = e.data;
+  if (m.type === 'ready') ok(); else if (m.type === 'error' && m.id === undefined) bad(new Error(m.text));
+  else if (waiting.has(m.id)) { const w = waiting.get(m.id);
+    if (m.type === 'output') w.out += m.text; else if (m.type === 'diagnostics') w.diags = m.items;
+    else if (m.type === 'error') { waiting.delete(m.id); w.ok({ code: -1, out: w.out + m.text }); }
+    else if (m.type === 'done') { if (m.stage === 'compile') { w.compile = m; if (!m.runs) { waiting.delete(m.id); w.ok({ code: m.code, out: w.out, bytes: m.bytes, memory: m.memory, ms: m.ms }); } }
+      else { waiting.delete(m.id); w.ok({ code: w.compile.code, out: w.out, run: m.code, ms: w.compile.ms }); } } } }; });
+const tc = await (await fetch('/agente/toolchain/current.json')).json();
+k.postMessage({ type: 'load', base: new URL(`/agente/toolchain/${tc.tag}/`, location.href).href });
+const compile = (type, source) => new Promise((ok) => { const id = ++job; waiting.set(id, { ok, out: '' }); k.postMessage({ type, id, source }); });
+const RUN = `onmessage = async (e) => { const { bytes, memory: lim, w, h } = e.data; try {
+  const module = await WebAssembly.compile(bytes); const memory = new WebAssembly.Memory({ initial: lim.initial, maximum: Math.min(lim.maximum ?? 4096, 4096), shared: true });
+  const dv = () => new DataView(memory.buffer); const wasi = { fd_write(fd, iovs, n, nw) { let t = 0; for (let i = 0; i < n; i++) t += dv().getUint32(iovs + i * 8 + 4, true); dv().setUint32(nw, t, true); return 0; },
+    environ_sizes_get(a, b) { dv().setUint32(a, 0, true); dv().setUint32(b, 0, true); return 0; }, environ_get() { return 0; }, clock_time_get(i, p, ptr) { dv().setBigUint64(ptr, 0n, true); return 0; }, sched_yield() { return 0; }, proc_exit(c) { throw new Error('exit ' + c); } };
+  const imports = {}; for (const im of WebAssembly.Module.imports(module)) { imports[im.module] ??= {}; imports[im.module][im.name] = im.kind === 'memory' ? memory : (wasi[im.name] || (() => 52)); }
+  const x = (await WebAssembly.instantiate(module, imports)).exports; if (!x.init || !x.frame) throw new Error('missing export');
+  x._initialize?.(); x.init(w, h); let ptr = 0; for (const t of [0, 16, 33]) ptr = x.frame(t) >>> 0;
+  postMessage({ px: new Uint8Array(memory.buffer, ptr, w * h * 4).slice() }); } catch (err) { postMessage({ error: String(err.message || err) }); } };`;
+const runTile = (b) => new Promise((ok) => { const w = new Worker(URL.createObjectURL(new Blob([RUN], { type: 'text/javascript' }))); const t = setTimeout(() => { w.terminate(); ok({ error: 'timeout' }); }, 3000);
+  w.onmessage = (e) => { clearTimeout(t); w.terminate(); ok(e.data); }; w.postMessage({ bytes: b.bytes, memory: b.memory, w: 64, h: 48 }); });
+await kready;
+for (const task of TASKS) {
+  let ok = false, why = '';
+  if (task.kind === 'fn') { const r = await compile('test', task.solution + `\n#[cfg(test)]\nmod hidden_tests {\n    use super::*;\n    #[test]\n    fn hidden() { ${task.tests} }\n}\n`); ok = r.code === 0 && r.run === 0; why = ok ? '' : r.out.slice(0, 600); }
+  else { const r = await compile('build', task.solution); if (r.code !== 0) why = r.out.slice(0, 600); else { const t = await runTile(r); ok = !t.error && task.check(t.px, 64, 48); why = t.error || (ok ? '' : 'wrong picture'); } }
+  R.rows.push({ id: task.id, ok, why }); console.log(task.id, ok ? 'ok' : 'FAIL ' + why);
+}
+R.done = true;
+</script>
