@@ -1,0 +1,160 @@
+{
+	"base": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+	"rank": 16,
+	"lr": 0.0001,
+	"epochs": 1,
+	"trainable": 8798208,
+	"examples": 1143,
+	"heldSeeds": [
+		"al_counting_bits",
+		"al_gaussian_error_linear_unit",
+		"al_leaky_relu",
+		"al_momentum",
+		"al_reverse",
+		"al_ternary_search_min_max_recursive",
+		"chunks_of",
+		"ex_bob",
+		"ex_isogram",
+		"ex_protein_translation",
+		"flatten",
+		"intersect",
+		"most_common",
+		"repeat_join",
+		"t_bounce",
+		"t_noise",
+		"t_wave",
+		"zero_crossings"
+	],
+	"heldExamples": 48,
+	"threads": 4,
+	"steps": [
+		{
+			"step": 1,
+			"loss": 0.0997,
+			"seconds": 3
+		},
+		{
+			"step": 20,
+			"loss": 0.1725,
+			"seconds": 98
+		},
+		{
+			"step": 40,
+			"loss": 0.1694,
+			"seconds": 209
+		},
+		{
+			"step": 60,
+			"loss": 0.1698,
+			"seconds": 347
+		},
+		{
+			"step": 80,
+			"loss": 0.2793,
+			"seconds": 480
+		},
+		{
+			"step": 100,
+			"loss": 0.2119,
+			"seconds": 581
+		},
+		{
+			"step": 120,
+			"loss": 0.1749,
+			"seconds": 690
+		},
+		{
+			"step": 140,
+			"loss": 0.1665,
+			"seconds": 813
+		},
+		{
+			"step": 160,
+			"loss": 0.1896,
+			"seconds": 915
+		},
+		{
+			"step": 180,
+			"loss": 0.1045,
+			"seconds": 1071
+		},
+		{
+			"step": 200,
+			"loss": 0.0796,
+			"seconds": 1207
+		},
+		{
+			"step": 220,
+			"loss": 0.1394,
+			"seconds": 1342
+		},
+		{
+			"step": 240,
+			"loss": 0.1297,
+			"seconds": 1478
+		},
+		{
+			"step": 260,
+			"loss": 0.1424,
+			"seconds": 1623
+		},
+		{
+			"step": 280,
+			"loss": 0.1372,
+			"seconds": 1714
+		},
+		{
+			"step": 300,
+			"loss": 0.1868,
+			"seconds": 1834
+		},
+		{
+			"step": 320,
+			"loss": 0.1571,
+			"seconds": 1943
+		},
+		{
+			"step": 340,
+			"loss": 0.1127,
+			"seconds": 2045
+		},
+		{
+			"step": 360,
+			"loss": 0.1259,
+			"seconds": 2156
+		},
+		{
+			"step": 380,
+			"loss": 0.1392,
+			"seconds": 2257
+		},
+		{
+			"step": 400,
+			"loss": 0.1239,
+			"seconds": 2377
+		},
+		{
+			"step": 420,
+			"loss": 0.1013,
+			"seconds": 2489
+		},
+		{
+			"step": 440,
+			"loss": 0.1054,
+			"seconds": 2612
+		},
+		{
+			"step": 460,
+			"loss": 0.1298,
+			"seconds": 2705
+		},
+		{
+			"step": 480,
+			"loss": 0.118,
+			"seconds": 2826
+		}
+	],
+	"heldBefore": 0.26778568408917636,
+	"heldAfter": 0.18783381048812467,
+	"seconds": 2936
+}

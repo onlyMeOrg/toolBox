@@ -1,0 +1,108 @@
+# Fine-tunes the agent's base model on CPU (LoRA by backpropagation over agente-lab/data/out/
+# examples.jsonl), converts the result to GGUF with llama.cpp at a pinned commit and publishes the
+# files as a pre-release. Run by hand; the training takes about an hour on 4 cores.
+#
+# The conversion is llama.cpp's own (convert_hf_to_gguf.py, then llama-quantize), in its own Python
+# environment because it pins other versions of torch and transformers than the training uses. The
+# base model goes through the same conversion, so the two files can be compared fairly: the official
+# GGUF of this model is made from AWQ weights and is not the same starting point.
+#
+# Measuring the files on the 41 tasks is a separate step (agente-lab/run.mjs).
+name: Treino do agente
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Name of this version (goes into the tag and the file names), e.g. v1
+        required: true
+      epochs:
+        description: Passes over the examples
+        default: '1'
+      rank:
+        description: LoRA rank
+        default: '16'
+
+permissions:
+  contents: write
+
+env:
+  BASE_MODEL: Qwen/Qwen2.5-Coder-0.5B-Instruct
+  LLAMA_REPO: https://github.com/ggml-org/llama.cpp
+  LLAMA_COMMIT: cb44fdb1892eebca072e0949875a60c11245a8bb
+
+jobs:
+  treino:
+    name: Treinar, converter e publicar
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Conferir que a versão ainda não existe
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: agente-${{ inputs.version }}
+        run: |
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "::error::a release $TAG já existe; escolha outro nome de versão"; exit 1
+          fi
+
+      - name: Ambiente do treino
+        run: |
+          python3 -m venv ~/treino
+          ~/treino/bin/pip install -q --extra-index-url https://download.pytorch.org/whl/cpu \
+            torch==2.15.0 transformers==5.22.2 peft==0.21.2 safetensors==0.8.0
+
+      - name: Treinar
+        working-directory: agente-lab
+        run: |
+          ~/treino/bin/python train/train.py --out "$RUNNER_TEMP/run" --epochs "${{ inputs.epochs }}" --rank "${{ inputs.rank }}"
+          rm -rf "$RUNNER_TEMP/run/adapter"
+
+      - name: Baixar o modelo de base como veio
+        run: |
+          ~/treino/bin/python - <<'EOF'
+          import os
+          from huggingface_hub import snapshot_download
+          snapshot_download(os.environ["BASE_MODEL"], local_dir=os.environ["RUNNER_TEMP"] + "/base", allow_patterns=["*.json", "*.safetensors", "*.txt"])
+          EOF
+
+      - name: llama.cpp na versão fixada
+        run: |
+          git init -q llama && git -C llama fetch -q --depth 1 "$LLAMA_REPO" "$LLAMA_COMMIT" && git -C llama checkout -q FETCH_HEAD
+          cmake -S llama -B llama/build -DCMAKE_BUILD_TYPE=Release -DLLAMA_CURL=OFF -DLLAMA_BUILD_TESTS=OFF -DLLAMA_BUILD_EXAMPLES=OFF -DLLAMA_BUILD_SERVER=OFF > /dev/null
+          cmake --build llama/build --target llama-quantize -j "$(nproc)" > /dev/null
+          python3 -m venv ~/conversao
+          ~/conversao/bin/pip install -q -r llama/requirements/requirements-convert_hf_to_gguf.txt
+
+      - name: Converter e comprimir
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          mkdir out
+          for pair in "base:$RUNNER_TEMP/base" "$VERSION:$RUNNER_TEMP/run/merged"; do
+            name="${pair%%:*}"; folder="${pair#*:}"
+            ~/conversao/bin/python llama/convert_hf_to_gguf.py "$folder" --outtype f32 --outfile "$RUNNER_TEMP/$name-f32.gguf"
+            llama/build/bin/llama-quantize "$RUNNER_TEMP/$name-f32.gguf" "out/agente-$name-q4_0.gguf" Q4_0
+            llama/build/bin/llama-quantize "$RUNNER_TEMP/$name-f32.gguf" "out/agente-$name-q4_k_m.gguf" Q4_K_M
+            rm "$RUNNER_TEMP/$name-f32.gguf"
+          done
+          cp "$RUNNER_TEMP/run/log.json" "out/treino-$VERSION.json"
+          cd out && sha256sum * > SHA256SUMS && ls -la && cat SHA256SUMS
+
+      - name: Publicar
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: agente-${{ inputs.version }}
+        run: |
+          gh release create "$TAG" out/* --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
+            --title "Agente ${{ inputs.version }} (experimento)" \
+            --notes "Ajuste fino experimental de $BASE_MODEL (Apache-2.0) e o modelo de base pela mesma conversão, para comparar. llama.cpp em $LLAMA_COMMIT. Ainda não medido: não é uma versão para uso."
+          {
+            echo "### Publicado em $TAG"
+            echo '```'
+            cat out/SHA256SUMS
+            echo '```'
+            ~/treino/bin/python -c "import json,sys; d=json.load(open('out/treino-${{ inputs.version }}.json')); print('perda nas sementes de fora: %.4f antes, %.4f depois; %d exemplos em %d s' % (d['heldBefore'], d['heldAfter'], d['examples'], d['seconds']))"
+          } >> "$GITHUB_STEP_SUMMARY"
