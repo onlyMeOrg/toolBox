@@ -19,8 +19,30 @@ que sobrar, e um teste escondido decide.
 
 Regra: nenhuma tarefa daqui entra em dado de treino.
 
-`npm run verify` prova que as 41 referências passam com o compilador de verdade. Se uma tarefa nova
-não passa com a própria referência, a tarefa está errada.
+`tasks2.mjs`, conjunto 2 (2026-11-24): 15 tiles a mais, medidos à parte dos 41. Nove pedem um conceito
+só (`needs: 'one'`) e seis pedem dois juntos (`needs: 'two'`, por exemplo uma bola que cai: distância
+mais a fórmula da queda). Alguns conferem o movimento em tempos próprios (`times`).
+
+`npm run verify` prova que todas as referências passam com o compilador de verdade (tarefas dos dois
+conjuntos, receitas e, com `--seeds`, os tiles-semente: 113 de 113). Se uma tarefa nova não passa com a
+própria referência, a tarefa está errada.
+
+## O caderno de receitas (`recipes.mjs`)
+
+31 programas pequenos, cada um demonstrando uma ideia dita em uma frase (distância a um ponto, mistura
+de duas cores, células, movimento pelo tempo, queda sob gravidade, oscilação, ângulo em torno de um
+centro, camadas com opacidade...): 24 de tile e 7 de função. `pick(pedido, tipo, k)` escolhe as `k`
+mais próximas do pedido por palavras em comum (peso por raridade da palavra), sem modelo. Com
+`--recipes K` elas entram no pedido antes da tarefa.
+
+Regras: uma receita nunca desenha uma figura da régua nem tem o nome de uma função medida. O
+`verify` roda cada receita contra a conferência de cada tile dos dois conjuntos e falha se alguma
+passar. Várias receitas são vizinhas de tarefas do conjunto 1 (disco e `circle`, células e `checker`),
+com outros números e cores: adaptar a ideia é o uso pretendido, e por isso existem as tarefas de dois
+conceitos.
+
+Primeira medição (modelo base, sem treino): as receitas no pedido não mudaram a nota. Números em
+`results/receitas/` e a leitura em `docs/agente-rust-wasm.md` do site.
 
 ## Como rodar
 
@@ -30,15 +52,17 @@ Precisa de Node 22 ou mais novo e do Playwright com o Chromium (instalado aqui o
 ```sh
 npm install        # o motor de inferência (wllama)
 npm run site       # baixa do site o worker de build, o núcleo WASI e o compilador (58 MB)
-npm run verify     # as 41 referências passam?
+npm run verify     # as referências passam?
 mkdir -p models && curl -L -o models/qwen2.5-coder-0.5b-instruct-q4_0.gguf \
   https://huggingface.co/Qwen/Qwen2.5-Coder-0.5B-Instruct-GGUF/resolve/main/qwen2.5-coder-0.5b-instruct-q4_0.gguf
 node run.mjs --model qwen2.5-coder-0.5b-instruct-q4_0.gguf
 ```
 
 Opções do `run.mjs`: `--calls N` (chamadas ao modelo por tarefa, padrão 3), `--only id,id`,
-`--few` (dois exemplos resolvidos de tarefas parecidas antes do pedido), `--shard i/n` (uma de n
-fatias do conjunto, para repartir a medição entre máquinas) e `--out arquivo.json`.
+`--few` (dois exemplos resolvidos de tarefas parecidas antes do pedido), `--recipes K` (K receitas
+do caderno antes do pedido), `--set 1|2|all` (qual conjunto; padrão 1), `--kind fn|tile`, `--seed N`,
+`--temp T`, `--shard i/n` (uma de n fatias do conjunto, para repartir a medição entre máquinas) e
+`--out arquivo.json`.
 
 `AGENTE_SITE=https://…` no `npm run site` aponta para outra publicação do site (uma prévia).
 `AGENTE_MODELS=pasta` diz onde estão os arquivos GGUF.
