@@ -24,14 +24,14 @@ pub extern "C" fn frame(t_ms: u32) -> *const u8 {
         for x in 0..width {
             let i = (y * width + x) * 4;
 `;
-const TILE_TAIL = `        }
+export const TILE_TAIL = `        }
     }
     pixels.as_ptr()
 }
 `;
-const tile = (id, ask, check, body) => ({ id, kind: 'tile', ask, check, solution: TILE_HEAD + body + TILE_TAIL });
-const at = (px, w, x, y) => px.subarray((y * w + x) * 4, (y * w + x) * 4 + 4);
-const is = (p, r, g, b, tol = 12) => Math.abs(p[0] - r) <= tol && Math.abs(p[1] - g) <= tol && Math.abs(p[2] - b) <= tol && p[3] === 255;
+export const tile = (id, ask, check, body) => ({ id, kind: 'tile', ask, check, solution: TILE_HEAD + body + TILE_TAIL });
+export const at = (px, w, x, y) => px.subarray((y * w + x) * 4, (y * w + x) * 4 + 4);
+export const is = (p, r, g, b, tol = 12) => Math.abs(p[0] - r) <= tol && Math.abs(p[1] - g) <= tol && Math.abs(p[2] - b) <= tol && p[3] === 255;
 
 export const TASKS = [
   fn('fib', 'Write `pub fn fib(n: u32) -> u64` that returns the n-th Fibonacci number (fib(0) = 0, fib(1) = 1). It must be fast for n up to 90.',

@@ -2,14 +2,20 @@
 <!-- The agent's loop against the measuring set: the model writes, the real compiler builds, the
      compiler's own fixes are applied, the model repairs, hidden checks decide. Driven by run.mjs.
      ?model=file.gguf &calls=N (model calls per task) &only=id,id &few=1 (solved examples in the prompt)
+     &set=1|2|all (measuring set; 2 is tasks2.mjs) &kind=fn|tile &recipes=K (K recipes of the notebook, chosen by the
+     request's words, written before it)
      &shard=i/n (every n-th task starting at i, to split a run across machines) -->
 <script type="module">
 import { Wllama } from '/wllama/index.js';
-import { TASKS, TILE_HEAD } from './tasks.mjs';
-import { SYS, TILE_NOTE, chatml, repairUser, whyText } from './prompt.mjs';
+import { TASKS as TASKS1, TILE_HEAD, TILE_TAIL } from './tasks.mjs';
+import { TASKS2 } from './tasks2.mjs';
+import { pick } from './recipes.mjs';
+import { SYS, TILE_NOTE, chatml, recipesText, repairUser, whyText } from './prompt.mjs';
 const P = new URLSearchParams(location.search);
 const MODEL = P.get('model'), ONLY = P.get('only');
 const [SHARD, SHARDS] = (P.get('shard') ?? '0/1').split('/').map(Number);
+const SET = P.get('set') ?? '1', KIND = P.get('kind'), RECIPES = +(P.get('recipes') ?? 0);
+const TASKS = (SET === '2' ? TASKS2 : SET === 'all' ? [...TASKS1, ...TASKS2] : TASKS1).filter((t) => !KIND || t.kind === KIND);
 const log = (...a) => { const t = a.join(' '); document.getElementById('log').textContent += t + '\n'; console.log(t); };
 const R = window.R = { tasks: [] };
 
@@ -29,17 +35,17 @@ k.postMessage({ type: 'load', base: new URL(`/agente/toolchain/${tc.tag}/`, loca
 const compile = (type, source) => new Promise((ok) => { const id = ++job; waiting.set(id, { ok, out: '' }); k.postMessage({ type, id, source }); });
 
 // ---- tile check: run 3 frames, give back the pixels
-const RUN = `onmessage = async (e) => { const { bytes, memory: lim, w, h } = e.data; try {
+const RUN = `onmessage = async (e) => { const { bytes, memory: lim, w, h, times } = e.data; try {
   const module = await WebAssembly.compile(bytes); const memory = new WebAssembly.Memory({ initial: lim.initial, maximum: Math.min(lim.maximum ?? 4096, 4096), shared: true });
   const dv = () => new DataView(memory.buffer); const wasi = { fd_write(fd, iovs, n, nw) { let t = 0; for (let i = 0; i < n; i++) t += dv().getUint32(iovs + i * 8 + 4, true); dv().setUint32(nw, t, true); return 0; },
     environ_sizes_get(a, b) { dv().setUint32(a, 0, true); dv().setUint32(b, 0, true); return 0; }, environ_get() { return 0; }, clock_time_get(i, p, ptr) { dv().setBigUint64(ptr, 0n, true); return 0; }, sched_yield() { return 0; }, proc_exit(c) { throw new Error('exit ' + c); } };
   const imports = {}; for (const im of WebAssembly.Module.imports(module)) { imports[im.module] ??= {}; imports[im.module][im.name] = im.kind === 'memory' ? memory : (wasi[im.name] || (() => 52)); }
   const x = (await WebAssembly.instantiate(module, imports)).exports; if (!x.init || !x.frame) throw new Error('missing export: ' + (!x.init ? 'init' : 'frame'));
-  x._initialize?.(); x.init(w, h); let ptr = 0; for (const t of [0, 16, 33]) ptr = x.frame(t) >>> 0;
+  x._initialize?.(); x.init(w, h); let ptr = 0; for (const t of times) ptr = x.frame(t) >>> 0;
   if (!ptr || ptr + w * h * 4 > memory.buffer.byteLength) throw new Error('frame returned a bad pointer');
   postMessage({ px: new Uint8Array(memory.buffer, ptr, w * h * 4).slice() }); } catch (err) { postMessage({ error: String(err.message || err) }); } };`;
-const runTile = (b) => new Promise((ok) => { const w = new Worker(URL.createObjectURL(new Blob([RUN], { type: 'text/javascript' }))); const t = setTimeout(() => { w.terminate(); ok({ error: 'timed out after 3 s' }); }, 3000);
-  w.onmessage = (e) => { clearTimeout(t); w.terminate(); ok(e.data); }; w.onerror = (e) => { clearTimeout(t); ok({ error: e.message }); }; w.postMessage({ bytes: b.bytes, memory: b.memory, w: 64, h: 48 }); });
+const runTile = (b, times = [0, 16, 33]) => new Promise((ok) => { const w = new Worker(URL.createObjectURL(new Blob([RUN], { type: 'text/javascript' }))); const t = setTimeout(() => { w.terminate(); ok({ error: 'timed out after 3 s' }); }, 3000);
+  w.onmessage = (e) => { clearTimeout(t); w.terminate(); ok(e.data); }; w.onerror = (e) => { clearTimeout(t); ok({ error: e.message }); }; w.postMessage({ bytes: b.bytes, memory: b.memory, w: 64, h: 48, times }); });
 
 // ---- model
 const wllama = new Wllama({ default: '/wllama/wasm/wllama.wasm' });
@@ -119,7 +125,7 @@ async function judge(task, code) {
   }
   const r = await compile('build', code);
   if (r.code !== 0) return { stage: 'compile', diags: r.diags, out: r.out };
-  const t = await runTile(r); if (t.error) return { stage: 'run', out: t.error };
+  const t = await runTile(r, task.times); if (t.error) return { stage: 'run', out: t.error };
   return task.check(t.px, 64, 48) ? { stage: 'pass' } : { stage: 'wrong' };
 }
 const trimErr = (s) => s.split('\n').filter((l) => !/^\s*$/.test(l)).slice(0, 25).join('\n').slice(0, 1200);
@@ -129,8 +135,9 @@ const MODEL_CALLS = +(P.get('calls') ?? 3);
 const SEED = 1000 * +(P.get('seed') ?? 0), TEMP = +(P.get('temp') ?? 0);
 for (const [n, task] of TASKS.entries()) {
   if (ONLY ? !ONLY.split(',').includes(task.id) : n % SHARDS !== SHARD) continue;
-  const rec = { id: task.id, kind: task.kind, steps: [], pass: false, modelCalls: 0, autofixes: 0 }; R.tasks.push(rec);
-  const ask = shots(task) + task.ask + (task.kind === 'tile' ? TILE_NOTE : ''); const head = task.kind === 'tile' ? TILE_HEAD : '';
+  const chosen = RECIPES ? pick(task.ask, task.kind, RECIPES) : [];
+  const rec = { id: task.id, kind: task.kind, set: task.set ?? 1, ...(RECIPES ? { recipes: chosen.map((r) => r.id) } : {}), steps: [], pass: false, modelCalls: 0, autofixes: 0 }; R.tasks.push(rec);
+  const ask = shots(task) + recipesText(chosen, TILE_TAIL) + task.ask + (task.kind === 'tile' ? TILE_NOTE : ''); const head = task.kind === 'tile' ? TILE_HEAD : '';
   let g = await generate(ask, head, TEMP); rec.modelCalls++; let code = g.code; rec.steps.push({ what: 'write', ...g });
   for (;;) {
     let v = await judge(task, code);
