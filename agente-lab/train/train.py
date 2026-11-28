@@ -4,9 +4,10 @@ data/out/examples.jsonl (data/examples.mjs). The loss counts only the answer, ne
     python train/train.py --out runs/v1 [--epochs 1] [--lr 1e-4] [--rank 16] [--limit N] [--device cpu|mps|cuda]
 
 Writes the adapter, a merged model ready for llama.cpp's convert_hf_to_gguf.py, and log.json with
-the loss on seeds kept out of training, before and after. Needs torch, transformers and peft.
+the loss on seeds kept out of training, before and after. A checkpoint is written every --save-every
+steps (and on Ctrl+C); the same command with --resume continues from it. Needs torch, transformers and peft.
 """
-import argparse, json, random, time
+import argparse, hashlib, json, os, random, time
 from pathlib import Path
 
 import torch
@@ -26,6 +27,9 @@ parser.add_argument("--max-tokens", type=int, default=1100)
 parser.add_argument("--limit", type=int, default=0, help="stop after this many steps (a smoke run)")
 parser.add_argument("--seed", type=int, default=1)
 parser.add_argument("--device", default="cpu", help="cpu (the measured path), mps (Apple Silicon) or cuda")
+parser.add_argument("--save-every", type=int, default=25, help="write a checkpoint every this many steps (0 = never)")
+parser.add_argument("--resume", action="store_true", help="continue from the checkpoint in --out, with the same options")
+parser.add_argument("--stop-at", type=int, default=0, help="stop after this step as Ctrl+C would (to try --resume)")
 parser.add_argument("--threads", type=int, default=0, help="CPU threads (0 = what torch chooses)")
 parser.add_argument("--write-copies", type=int, default=3, help="how many times a seed's write example is seen")
 parser.add_argument("--repairs", type=int, default=0, help="keep at most this many repair examples (0 = all that the sampling keeps)")
@@ -86,24 +90,60 @@ def held_loss(rows=None):
     model.train()
     return total / max(1, len(rows))
 
-log = {"base": BASE, "rank": args.rank, "lr": args.lr, "epochs": args.epochs, "trainable": trainable,
-       "examples": len(train), "variants": sum(1 for r in train if r.get("variant")), "repairs": sum(1 for r in train if r["kind"] == "repair"), "heldVariants": len(check_variants), "heldSeeds": sorted(held), "heldExamples": len(check), "device": args.device, "threads": torch.get_num_threads(), "steps": []}
-print(json.dumps({k: v for k, v in log.items() if k != "steps"}), flush=True)
-log["heldBefore"] = held_loss()
-log["heldVariantsBefore"] = held_loss(check_variants)
-print("held-out loss before", round(log["heldBefore"], 4), "variants", round(log["heldVariantsBefore"], 4), flush=True)
-
-steps = args.epochs * len(train)
-opt = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=args.lr, weight_decay=0.0)
-sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda s: min(1.0, (s + 1) / 20) * max(0.05, 1 - s / steps))
-start = time.time()
-step = 0
-running = None
-model.train()
+# The order of the whole run is decided before the first step, so a run that stops can continue.
+order = []
 for epoch in range(args.epochs):
     random.shuffle(train)
-    for r in train:
-        ids, labels = encode(r)
+    order += train
+steps = len(order)
+out = Path(args.out)
+ckpt = out / "checkpoint.pt"
+# What must be equal for a checkpoint to be continued: the options that shape the run and the exact order of the examples.
+key = hashlib.sha256(json.dumps([BASE, args.rank, args.lr, args.epochs, args.max_tokens, args.seed, [r["id"] for r in order]]).encode()).hexdigest()
+opt = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=args.lr, weight_decay=0.0)
+sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda s: min(1.0, (s + 1) / 20) * max(0.05, 1 - s / steps))
+adapter = lambda: {n: p.detach().cpu() for n, p in model.named_parameters() if p.requires_grad}
+
+log = {"base": BASE, "rank": args.rank, "lr": args.lr, "epochs": args.epochs, "trainable": trainable,
+       "examples": len(train), "variants": sum(1 for r in train if r.get("variant")), "repairs": sum(1 for r in train if r["kind"] == "repair"), "heldVariants": len(check_variants), "heldSeeds": sorted(held), "heldExamples": len(check), "device": args.device, "threads": torch.get_num_threads(), "steps": []}
+step = 0
+running = None
+spent = 0.0  # seconds of training before this session
+if args.resume:
+    if not ckpt.exists():
+        raise SystemExit(f"--resume: there is no checkpoint in {out}")
+    saved = torch.load(ckpt, map_location="cpu", weights_only=False)
+    if saved["key"] != key:
+        raise SystemExit("--resume: the checkpoint was made with other options or other examples; use the same command, or start again without --resume")
+    with torch.no_grad():
+        for n, p in model.named_parameters():
+            if p.requires_grad:
+                p.copy_(saved["adapter"][n])
+    opt.load_state_dict(saved["opt"])
+    sched.load_state_dict(saved["sched"])
+    torch.set_rng_state(saved["rng"])
+    step, running, spent, log = saved["step"], saved["running"], saved["seconds"], saved["log"]
+    log["resumed"] = log.get("resumed", []) + [step]
+    print(f"continuing from step {step}/{steps}", flush=True)
+else:
+    print(json.dumps({k: v for k, v in log.items() if k != "steps"}), flush=True)
+    log["heldBefore"] = held_loss()
+    log["heldVariantsBefore"] = held_loss(check_variants)
+    print("held-out loss before", round(log["heldBefore"], 4), "variants", round(log["heldVariantsBefore"], 4), flush=True)
+
+start = time.time()
+def save():
+    out.mkdir(parents=True, exist_ok=True)
+    tmp = out / "checkpoint.pt.tmp"
+    torch.save({"key": key, "step": step, "running": running, "seconds": spent + time.time() - start, "log": log,
+                "adapter": adapter(), "opt": opt.state_dict(), "sched": sched.state_dict(), "rng": torch.get_rng_state()}, tmp)
+    os.replace(tmp, ckpt)  # never leaves half a file behind
+
+model.train()
+last = min(steps, args.limit) if args.limit else steps
+try:
+    while step < last:
+        ids, labels = encode(order[step])
         loss = model(input_ids=ids, labels=labels).loss
         loss.backward()
         torch.nn.utils.clip_grad_norm_([p for p in model.parameters() if p.requires_grad], 1.0)
@@ -111,22 +151,27 @@ for epoch in range(args.epochs):
         step += 1
         running = loss.item() if running is None else 0.95 * running + 0.05 * loss.item()
         if step % 20 == 0 or step == 1:
-            log["steps"].append({"step": step, "loss": round(running, 4), "seconds": round(time.time() - start)})
-            print(f"step {step}/{steps} loss {running:.4f} {time.time() - start:.0f} s", flush=True)
-        if args.limit and step >= args.limit:
-            break
-    if args.limit and step >= args.limit:
-        break
+            log["steps"].append({"step": step, "loss": round(running, 4), "seconds": round(spent + time.time() - start)})
+            print(f"step {step}/{steps} loss {running:.4f} {spent + time.time() - start:.0f} s", flush=True)
+        if args.save_every and step % args.save_every == 0 and step < last:
+            save()
+        if step == args.stop_at:
+            raise KeyboardInterrupt
+except KeyboardInterrupt:
+    # Ctrl+C between two steps loses nothing; in the middle of one, that step is done again.
+    opt.zero_grad()
+    save()
+    raise SystemExit(f"stopped at step {step}/{steps}; the same command with --resume continues")
 
 log["heldAfter"] = held_loss()
 log["heldVariantsAfter"] = held_loss(check_variants)
-log["seconds"] = round(time.time() - start)
+log["seconds"] = round(spent + time.time() - start)
 print("held-out loss after", round(log["heldAfter"], 4), "variants", round(log["heldVariantsAfter"], 4), flush=True)
-out = Path(args.out)
 out.mkdir(parents=True, exist_ok=True)
 model.save_pretrained(out / "adapter")
 merged = model.merge_and_unload().to("cpu")
 merged.save_pretrained(out / "merged")
 tok.save_pretrained(out / "merged")
 (out / "log.json").write_text(json.dumps(log, indent="\t") + "\n")
+ckpt.unlink(missing_ok=True)
 print("written to", out)

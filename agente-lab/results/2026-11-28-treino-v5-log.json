@@ -1,0 +1,230 @@
+{
+	"base": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+	"rank": 16,
+	"lr": 0.0001,
+	"epochs": 1,
+	"trainable": 8798208,
+	"examples": 746,
+	"variants": 318,
+	"repairs": 250,
+	"heldVariants": 52,
+	"heldSeeds": [
+		"al_counting_bits",
+		"al_gaussian_error_linear_unit",
+		"al_leaky_relu",
+		"al_momentum",
+		"al_reverse",
+		"al_ternary_search_min_max_recursive",
+		"chunks_of",
+		"ex_bob",
+		"ex_isogram",
+		"ex_protein_translation",
+		"flatten",
+		"intersect",
+		"most_common",
+		"repeat_join",
+		"t_bounce",
+		"t_noise",
+		"t_wave",
+		"zero_crossings"
+	],
+	"heldExamples": 48,
+	"threads": 4,
+	"steps": [
+		{
+			"step": 1,
+			"loss": 1.4316,
+			"seconds": 5
+		},
+		{
+			"step": 20,
+			"loss": 0.7895,
+			"seconds": 80
+		},
+		{
+			"step": 40,
+			"loss": 0.5423,
+			"seconds": 156
+		},
+		{
+			"step": 60,
+			"loss": 0.387,
+			"seconds": 239
+		},
+		{
+			"step": 80,
+			"loss": 0.3663,
+			"seconds": 320
+		},
+		{
+			"step": 100,
+			"loss": 0.3639,
+			"seconds": 392
+		},
+		{
+			"step": 120,
+			"loss": 0.3126,
+			"seconds": 471
+		},
+		{
+			"step": 140,
+			"loss": 0.248,
+			"seconds": 572
+		},
+		{
+			"step": 160,
+			"loss": 0.2224,
+			"seconds": 658
+		},
+		{
+			"step": 180,
+			"loss": 0.2507,
+			"seconds": 752
+		},
+		{
+			"step": 200,
+			"loss": 0.2305,
+			"seconds": 845
+		},
+		{
+			"step": 220,
+			"loss": 0.2011,
+			"seconds": 941
+		},
+		{
+			"step": 240,
+			"loss": 0.1916,
+			"seconds": 1030
+		},
+		{
+			"step": 260,
+			"loss": 0.1612,
+			"seconds": 1127
+		},
+		{
+			"step": 280,
+			"loss": 0.1625,
+			"seconds": 1204
+		},
+		{
+			"step": 300,
+			"loss": 0.1397,
+			"seconds": 1300
+		},
+		{
+			"step": 320,
+			"loss": 0.1734,
+			"seconds": 1386
+		},
+		{
+			"step": 340,
+			"loss": 0.1487,
+			"seconds": 1479
+		},
+		{
+			"step": 360,
+			"loss": 0.1665,
+			"seconds": 1571
+		},
+		{
+			"step": 380,
+			"loss": 0.1563,
+			"seconds": 1652
+		},
+		{
+			"step": 400,
+			"loss": 0.1104,
+			"seconds": 1745
+		},
+		{
+			"step": 420,
+			"loss": 0.1623,
+			"seconds": 1853
+		},
+		{
+			"step": 440,
+			"loss": 0.0959,
+			"seconds": 1965
+		},
+		{
+			"step": 460,
+			"loss": 0.0803,
+			"seconds": 2068
+		},
+		{
+			"step": 480,
+			"loss": 0.1045,
+			"seconds": 2183
+		},
+		{
+			"step": 500,
+			"loss": 0.0895,
+			"seconds": 2273
+		},
+		{
+			"step": 520,
+			"loss": 0.099,
+			"seconds": 2365
+		},
+		{
+			"step": 540,
+			"loss": 0.0705,
+			"seconds": 2461
+		},
+		{
+			"step": 560,
+			"loss": 0.0681,
+			"seconds": 2544
+		},
+		{
+			"step": 580,
+			"loss": 0.2027,
+			"seconds": 2628
+		},
+		{
+			"step": 600,
+			"loss": 0.128,
+			"seconds": 2720
+		},
+		{
+			"step": 620,
+			"loss": 0.0956,
+			"seconds": 2788
+		},
+		{
+			"step": 640,
+			"loss": 0.0851,
+			"seconds": 2891
+		},
+		{
+			"step": 660,
+			"loss": 0.0916,
+			"seconds": 2981
+		},
+		{
+			"step": 680,
+			"loss": 0.1378,
+			"seconds": 3075
+		},
+		{
+			"step": 700,
+			"loss": 0.0922,
+			"seconds": 3192
+		},
+		{
+			"step": 720,
+			"loss": 0.0603,
+			"seconds": 3310
+		},
+		{
+			"step": 740,
+			"loss": 0.0998,
+			"seconds": 3396
+		}
+	],
+	"heldBefore": 0.26778568408917636,
+	"heldVariantsBefore": 0.9919476916010563,
+	"heldAfter": 0.16975171447264378,
+	"heldVariantsAfter": 0.04201507651864981,
+	"seconds": 3625
+}

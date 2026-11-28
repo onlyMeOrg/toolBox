@@ -102,6 +102,7 @@ python3 -m venv .venv && . .venv/bin/activate
 pip install -r train/requirements.txt
 python train/train.py --out runs/teste --limit 20          # ensaio de dois minutos
 python train/train.py --out runs/v5 --write-copies 1 --repairs 250
+python train/train.py --out runs/v5 --write-copies 1 --repairs 250 --resume   # se parou no meio
 ```
 
 Windows 11 (PowerShell):
@@ -130,10 +131,17 @@ O que foi medido e o que não foi:
 - **Não testado: macOS e Windows.** As bibliotecas existem para os dois e o código não usa nada
   específico de sistema, mas nenhum treino rodou neles ainda. O primeiro ensaio (`--limit 20`) é o
   teste.
-- Num Mac com Apple Silicon, `--device mps` usa a GPU do aparelho. Também não testado; se alguma
-  operação faltar, `PYTORCH_ENABLE_MPS_FALLBACK=1` antes do comando faz essa parte voltar para a CPU.
-- O treino não retoma de onde parou: se o computador dormir ou desligar no meio, começa de novo.
-  Deixe ligado na tomada e sem suspender.
+- Num Mac da série M, `--device mps` usa a GPU do aparelho e deve ser bem mais rápido que a CPU.
+  Também não testado: rode o ensaio de 20 passos com e sem ele e compare os segundos por passo e a
+  perda. Se alguma operação faltar, `PYTORCH_ENABLE_MPS_FALLBACK=1` antes do comando faz essa parte
+  voltar para a CPU.
+- **O treino continua de onde parou.** A cada 25 passos (`--save-every`) ele grava
+  `runs/<nome>/checkpoint.pt` (uns 100 MB, apagado ao terminar), e também ao receber Ctrl+C. O mesmo
+  comando com `--resume` no fim continua dali; se as opções ou os exemplos mudaram, ele recusa em vez
+  de misturar. Conferido em CPU: parar no passo 3 e continuar até o 6 deu exatamente os mesmos pesos
+  que rodar os 6 direto (diferença 0). Se a máquina desligar sem aviso, perdem-se no máximo os
+  passos desde a última gravação. Com `--device mps` a continuação funciona, mas a igualdade exata
+  não foi conferida.
 - Aparelhos diferentes dão pesos um pouco diferentes (a ordem das contas em ponto flutuante muda).
   Para comparar dois modelos, o que vale é a medição com três sementes, não a perda.
 
