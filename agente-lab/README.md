@@ -113,6 +113,27 @@ Resultado de 2026-11-11 (`data/out/pairs.jsonl`, resumo em `pairs.summary.json`)
 50 s, 423 de compilação e 103 de teste. Dos 423, a correção sugerida pelo compilador refaz o original
 em 258 (61 %).
 
+### Variações das receitas (`data/variants.mjs`)
+
+`node data/variants-gen.mjs --per 14` transforma o caderno de receitas em exemplos de escrita de
+tiles. São 27 moldes (um por ideia: disco, anel, mistura de cores, células, faixas, movimento, queda,
+balanço, ângulo, ruído, camadas...), e cada molde escreve programas com outros números, cores,
+posições e jeitos de pedir. A resposta começa com a ideia em uma frase, como comentário.
+
+A prova de cada variação: o compilador de verdade constrói o programa, ele roda em dois tamanhos de
+canvas (64×48 e 80×40) e em cada um dos seus tempos, e a imagem inteira é comparada, pixel a pixel,
+com uma referência calculada em JavaScript pelo mesmo molde. Uma variação que passe na conferência de
+algum tile da régua é descartada. Resultado de 2026-11-28: 370 de 378 ficam (`data/out/variants.jsonl`),
+nenhuma falhou na própria prova, oito descartadas por passarem numa conferência da régua (quase
+todas na do `solid`, que olha poucos pontos).
+
+Fica de fora de propósito: um disco que se move. O conjunto 2 pede movimento e forma juntos, e essa
+combinação deve continuar nunca vista no treino.
+
+`data/examples.mjs` junta as variações aos outros exemplos; no `train.py`, uma em cada sete de cada
+molde fica fora do treino, para acompanhar a perda (`--write-copies` e `--repairs` regulam o resto
+da mistura).
+
 Limites conhecidos:
 
 - **As sementes nunca são tarefas de medição.** `gen.mjs` recusa rodar se uma semente define uma
