@@ -15,7 +15,7 @@ base model written by this same script (the second command), not with the offici
 import argparse
 
 import torch
-from gguf import GGUFReader, GGUFValueType, GGUFWriter, quants
+from gguf import GGMLQuantizationType, GGUFReader, GGUFValueType, GGUFWriter, quants
 from transformers import AutoModelForCausalLM
 
 # GGUF name → Hugging Face name, inside a block and outside.
@@ -28,10 +28,16 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--base", required=True)
 parser.add_argument("--merged", required=True, help="a folder written by train.py, or a Hugging Face model name")
 parser.add_argument("--out", required=True)
+parser.add_argument("--adapter", help="an adapter folder written by train.py, merged in memory into --merged (then a model name): no 1.9 GB folder needed")
+parser.add_argument("--type", help="store the matrices the base file has in Q4_0 in this type instead (Q8_0, F16): to see what the 4 bits cost")
 args = parser.parse_args()
 
 reader = GGUFReader(args.base)
-weights = AutoModelForCausalLM.from_pretrained(args.merged, dtype=torch.float32).state_dict()
+model = AutoModelForCausalLM.from_pretrained(args.merged, dtype=torch.float32)
+if args.adapter:
+    from peft import PeftModel
+    model = PeftModel.from_pretrained(model, args.adapter).merge_and_unload()
+weights = model.state_dict()
 
 def source(name):
     """The Hugging Face tensor for a GGUF tensor."""
@@ -48,9 +54,12 @@ for name, field in reader.fields.items():
     writer.add_key_value(name, field.contents(), kind, sub_type=field.types[-1] if kind == GGUFValueType.ARRAY else None)
 for tensor in reader.tensors:
     matrix = source(tensor.name)
-    data = quants.quantize(matrix, tensor.tensor_type)
-    assert data.shape == tensor.data.shape, tensor.name
-    writer.add_tensor(tensor.name, data, raw_dtype=tensor.tensor_type)
+    kind = tensor.tensor_type
+    if args.type and kind == GGMLQuantizationType.Q4_0:
+        kind = GGMLQuantizationType[args.type]
+    data = quants.quantize(matrix, kind)
+    assert args.type or data.shape == tensor.data.shape, tensor.name
+    writer.add_tensor(tensor.name, data, raw_dtype=kind)
 writer.write_header_to_file()
 writer.write_kv_data_to_file()
 writer.write_tensors_to_file()
