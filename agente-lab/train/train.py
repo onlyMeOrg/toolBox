@@ -1,7 +1,7 @@
 """First fine-tuning of the agent's base model, on CPU: LoRA by backpropagation over the examples of
 data/out/examples.jsonl (data/examples.mjs). The loss counts only the answer, never the prompt.
 
-    python train/train.py --out runs/v1 [--epochs 1] [--lr 1e-4] [--rank 16] [--limit N]
+    python train/train.py --out runs/v1 [--epochs 1] [--lr 1e-4] [--rank 16] [--limit N] [--device cpu|mps|cuda]
 
 Writes the adapter, a merged model ready for llama.cpp's convert_hf_to_gguf.py, and log.json with
 the loss on seeds kept out of training, before and after. Needs torch, transformers and peft.
@@ -25,10 +25,15 @@ parser.add_argument("--rank", type=int, default=16)
 parser.add_argument("--max-tokens", type=int, default=1100)
 parser.add_argument("--limit", type=int, default=0, help="stop after this many steps (a smoke run)")
 parser.add_argument("--seed", type=int, default=1)
+parser.add_argument("--device", default="cpu", help="cpu (the measured path), mps (Apple Silicon) or cuda")
+parser.add_argument("--threads", type=int, default=0, help="CPU threads (0 = what torch chooses)")
 parser.add_argument("--write-copies", type=int, default=3, help="how many times a seed's write example is seen")
 parser.add_argument("--repairs", type=int, default=0, help="keep at most this many repair examples (0 = all that the sampling keeps)")
 args = parser.parse_args()
 random.seed(args.seed)
+if args.threads:
+    torch.set_num_threads(args.threads)
+device = torch.device(args.device)
 torch.manual_seed(args.seed)
 
 rows = [json.loads(line) for line in open(args.examples, encoding="utf8")]
@@ -63,10 +68,11 @@ def encode(r):
     answer = tok(r["answer"], add_special_tokens=False).input_ids
     ids = (prompt + answer)[-args.max_tokens:] if len(prompt) + len(answer) > args.max_tokens else prompt + answer
     labels = ([-100] * len(prompt) + answer)[-len(ids):]
-    return torch.tensor([ids]), torch.tensor([labels])
+    return torch.tensor([ids], device=device), torch.tensor([labels], device=device)
 
 model = AutoModelForCausalLM.from_pretrained(BASE, torch_dtype=torch.float32)
 model = get_peft_model(model, LoraConfig(r=args.rank, lora_alpha=2 * args.rank, lora_dropout=0.05, target_modules=MODULES, task_type="CAUSAL_LM"))
+model.to(device)
 trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 def held_loss(rows=None):
@@ -81,7 +87,7 @@ def held_loss(rows=None):
     return total / max(1, len(rows))
 
 log = {"base": BASE, "rank": args.rank, "lr": args.lr, "epochs": args.epochs, "trainable": trainable,
-       "examples": len(train), "variants": sum(1 for r in train if r.get("variant")), "repairs": sum(1 for r in train if r["kind"] == "repair"), "heldVariants": len(check_variants), "heldSeeds": sorted(held), "heldExamples": len(check), "threads": torch.get_num_threads(), "steps": []}
+       "examples": len(train), "variants": sum(1 for r in train if r.get("variant")), "repairs": sum(1 for r in train if r["kind"] == "repair"), "heldVariants": len(check_variants), "heldSeeds": sorted(held), "heldExamples": len(check), "device": args.device, "threads": torch.get_num_threads(), "steps": []}
 print(json.dumps({k: v for k, v in log.items() if k != "steps"}), flush=True)
 log["heldBefore"] = held_loss()
 log["heldVariantsBefore"] = held_loss(check_variants)
@@ -119,7 +125,7 @@ print("held-out loss after", round(log["heldAfter"], 4), "variants", round(log["
 out = Path(args.out)
 out.mkdir(parents=True, exist_ok=True)
 model.save_pretrained(out / "adapter")
-merged = model.merge_and_unload()
+merged = model.merge_and_unload().to("cpu")
 merged.save_pretrained(out / "merged")
 tok.save_pretrained(out / "merged")
 (out / "log.json").write_text(json.dumps(log, indent="\t") + "\n")

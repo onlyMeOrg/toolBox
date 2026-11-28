@@ -1,0 +1,8 @@
+# What the trainings recorded in this repository ran with (Python 3.13, CPU).
+# On Linux without a GPU, install torch from the CPU index first:
+#   pip install torch==2.15.0 --index-url https://download.pytorch.org/whl/cpu
+torch==2.15.0
+transformers==5.22.2
+peft==0.21.2
+gguf==0.19.0
+numpy==2.5.4

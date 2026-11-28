@@ -87,6 +87,56 @@ O worker de build e o núcleo WASI são os do site, baixados em produção; a ca
 compilador é o construído pela receita em [`../agente-toolchain/`](../agente-toolchain/). A
 inferência é o [wllama](https://github.com/ngxson/wllama) (MIT).
 
+## Treinar na sua máquina (`train/`)
+
+O treino é um ajuste pequeno (LoRA) do Qwen2.5-Coder-0.5B, feito só com CPU. Não precisa de Node,
+de navegador nem de placa de vídeo: os exemplos já estão no repositório (`data/out/examples.jsonl`).
+Precisa de Python 3.11 ou mais novo, uns 6 GB de memória livre e 4 GB de disco (o modelo de base,
+1 GB, é baixado do Hugging Face na primeira vez).
+
+macOS ou Linux:
+
+```sh
+cd agente-lab
+python3 -m venv .venv && . .venv/bin/activate
+pip install -r train/requirements.txt
+python train/train.py --out runs/teste --limit 20          # ensaio de dois minutos
+python train/train.py --out runs/v5 --write-copies 1 --repairs 250
+```
+
+Windows 11 (PowerShell):
+
+```powershell
+cd agente-lab
+py -m venv .venv; .venv\Scripts\Activate.ps1
+pip install -r train\requirements.txt
+python train\train.py --out runs\teste --limit 20
+python train\train.py --out runs\v5 --write-copies 1 --repairs 250
+```
+
+O que sai em `runs/<nome>/`: `adapter/` (o ajuste, 34 MB), `merged/` (o modelo inteiro, 1,9 GB) e
+`log.json` (a perda passo a passo e nos exemplos guardados de fora, antes e depois).
+
+Para o modelo virar o arquivo que a página e a medição usam (GGUF, 4 bits):
+
+```sh
+python train/to_gguf.py --base models/qwen2.5-coder-0.5b-instruct-q4_0.gguf --merged runs/v5/merged --out models/v5-q4_0.gguf
+node run.mjs --model v5-q4_0.gguf --calls 1 --temp 0.3 --seed 1 --set all    # ver "Como rodar"
+```
+
+O que foi medido e o que não foi:
+
+- Medido: Linux, 4 núcleos, sem GPU: 4 a 6 segundos por passo, 50 minutos para 750 exemplos.
+- **Não testado: macOS e Windows.** As bibliotecas existem para os dois e o código não usa nada
+  específico de sistema, mas nenhum treino rodou neles ainda. O primeiro ensaio (`--limit 20`) é o
+  teste.
+- Num Mac com Apple Silicon, `--device mps` usa a GPU do aparelho. Também não testado; se alguma
+  operação faltar, `PYTORCH_ENABLE_MPS_FALLBACK=1` antes do comando faz essa parte voltar para a CPU.
+- O treino não retoma de onde parou: se o computador dormir ou desligar no meio, começa de novo.
+  Deixe ligado na tomada e sem suspender.
+- Aparelhos diferentes dão pesos um pouco diferentes (a ordem das contas em ponto flutuante muda).
+  Para comparar dois modelos, o que vale é a medição com três sementes, não a perda.
+
 ## Dados de treino por mutação (`data/`)
 
 **Programas de fora.** `node data/import.mjs --exercism <clone> --algorithms <clone>` traz programas com
