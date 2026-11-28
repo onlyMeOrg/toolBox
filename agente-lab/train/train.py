@@ -25,26 +25,37 @@ parser.add_argument("--rank", type=int, default=16)
 parser.add_argument("--max-tokens", type=int, default=1100)
 parser.add_argument("--limit", type=int, default=0, help="stop after this many steps (a smoke run)")
 parser.add_argument("--seed", type=int, default=1)
+parser.add_argument("--write-copies", type=int, default=3, help="how many times a seed's write example is seen")
+parser.add_argument("--repairs", type=int, default=0, help="keep at most this many repair examples (0 = all that the sampling keeps)")
 args = parser.parse_args()
 random.seed(args.seed)
 torch.manual_seed(args.seed)
 
 rows = [json.loads(line) for line in open(args.examples, encoding="utf8")]
-seeds = sorted({r["seed"] for r in rows})
+seeds = sorted({r["seed"] for r in rows if not r.get("variant")})
 held = set(seeds[5::11])  # whole seeds kept out: their loss says whether it learns or memorises
+# Variants of the recipe notebook: one in seven of each template is kept out instead (index 6 and 13).
+held_variant = lambda r: r.get("variant") and int(r["id"].split(":")[1]) % 7 == 6
 # How often each kind is seen. Writing comes three times (few examples, and the tile contract is
 # new to the model); repairs the compiler already makes by itself come one time in three.
 def copies(r):
+    if r.get("variant"):
+        return 1
     if r["kind"] == "write":
-        return 3
+        return args.write_copies
     if r.get("autofix") in ("sure", "maybe"):
         return 1 if random.random() < 1 / 3 else 0
     if r.get("stage") == "test":
         return 1 if random.random() < 1 / 2 else 0
     return 1
 
-train = [r for r in rows if r["seed"] not in held for _ in range(copies(r))]
+train = [r for r in rows if r["seed"] not in held and not held_variant(r) for _ in range(copies(r))]
+if args.repairs:
+    repairs = [r for r in train if r["kind"] == "repair"]
+    random.shuffle(repairs)
+    train = [r for r in train if r["kind"] != "repair"] + repairs[:args.repairs]
 check = [r for r in rows if r["seed"] in held and (r["kind"] == "write" or r.get("autofix") in ("none", "other"))]
+check_variants = [r for r in rows if held_variant(r)]
 
 tok = AutoTokenizer.from_pretrained(BASE)
 def encode(r):
@@ -58,21 +69,23 @@ model = AutoModelForCausalLM.from_pretrained(BASE, torch_dtype=torch.float32)
 model = get_peft_model(model, LoraConfig(r=args.rank, lora_alpha=2 * args.rank, lora_dropout=0.05, target_modules=MODULES, task_type="CAUSAL_LM"))
 trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
 
-def held_loss():
+def held_loss(rows=None):
+    rows = check if rows is None else rows
     model.eval()
     total = 0.0
     with torch.no_grad():
-        for r in check:
+        for r in rows:
             ids, labels = encode(r)
             total += model(input_ids=ids, labels=labels).loss.item()
     model.train()
-    return total / max(1, len(check))
+    return total / max(1, len(rows))
 
 log = {"base": BASE, "rank": args.rank, "lr": args.lr, "epochs": args.epochs, "trainable": trainable,
-       "examples": len(train), "heldSeeds": sorted(held), "heldExamples": len(check), "threads": torch.get_num_threads(), "steps": []}
+       "examples": len(train), "variants": sum(1 for r in train if r.get("variant")), "repairs": sum(1 for r in train if r["kind"] == "repair"), "heldVariants": len(check_variants), "heldSeeds": sorted(held), "heldExamples": len(check), "threads": torch.get_num_threads(), "steps": []}
 print(json.dumps({k: v for k, v in log.items() if k != "steps"}), flush=True)
 log["heldBefore"] = held_loss()
-print("held-out loss before", round(log["heldBefore"], 4), flush=True)
+log["heldVariantsBefore"] = held_loss(check_variants)
+print("held-out loss before", round(log["heldBefore"], 4), "variants", round(log["heldVariantsBefore"], 4), flush=True)
 
 steps = args.epochs * len(train)
 opt = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=args.lr, weight_decay=0.0)
@@ -100,8 +113,9 @@ for epoch in range(args.epochs):
         break
 
 log["heldAfter"] = held_loss()
+log["heldVariantsAfter"] = held_loss(check_variants)
 log["seconds"] = round(time.time() - start)
-print("held-out loss after", round(log["heldAfter"], 4), flush=True)
+print("held-out loss after", round(log["heldAfter"], 4), "variants", round(log["heldVariantsAfter"], 4), flush=True)
 out = Path(args.out)
 out.mkdir(parents=True, exist_ok=True)
 model.save_pretrained(out / "adapter")

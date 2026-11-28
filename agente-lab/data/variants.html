@@ -1,0 +1,58 @@
+<!doctype html><meta charset="utf-8"><pre id="log"></pre>
+<script type="module">
+// Proves the variants of the recipe notebook (variants.mjs): each one is built by the real compiler,
+// run at two canvas sizes and at each of its times, and the whole picture is compared with the
+// JavaScript reference. A variant that passes a check of the measuring sets is dropped.
+// Driven by variants-gen.mjs. Query: per=14  salt=1  only=template,template
+import { TASKS } from '../tasks.mjs';
+import { TASKS2 } from '../tasks2.mjs';
+import { variants } from './variants.mjs';
+const P = new URLSearchParams(location.search);
+const R = window.R = { rows: [], dropped: [] };
+const k = new Worker('/agente/build-worker.js', { type: 'module' });
+let job = 0; const waiting = new Map();
+const kready = new Promise((ok, bad) => { k.onmessage = (e) => { const m = e.data;
+  if (m.type === 'ready') ok(); else if (m.type === 'error' && m.id === undefined) bad(new Error(m.text));
+  else if (waiting.has(m.id)) { const w = waiting.get(m.id);
+    if (m.type === 'output') w.out += m.text;
+    else if (m.type === 'error') { waiting.delete(m.id); w.ok({ code: -1, out: w.out + m.text }); }
+    else if (m.type === 'done' && m.stage === 'compile') { waiting.delete(m.id); w.ok({ code: m.code, out: w.out, bytes: m.bytes, memory: m.memory }); } } }; });
+const tc = await (await fetch('/agente/toolchain/current.json')).json();
+k.postMessage({ type: 'load', base: new URL(`/agente/toolchain/${tc.tag}/`, location.href).href });
+const compile = (source) => new Promise((ok) => { const id = ++job; waiting.set(id, { ok, out: '' }); k.postMessage({ type: 'build', id, source }); });
+const RUN = `onmessage = async (e) => { const { bytes, memory: lim, w, h, times } = e.data; try {
+  const module = await WebAssembly.compile(bytes); const memory = new WebAssembly.Memory({ initial: lim.initial, maximum: Math.min(lim.maximum ?? 4096, 4096), shared: true });
+  const dv = () => new DataView(memory.buffer); const wasi = { fd_write(fd, iovs, n, nw) { let t = 0; for (let i = 0; i < n; i++) t += dv().getUint32(iovs + i * 8 + 4, true); dv().setUint32(nw, t, true); return 0; },
+    environ_sizes_get(a, b) { dv().setUint32(a, 0, true); dv().setUint32(b, 0, true); return 0; }, environ_get() { return 0; }, clock_time_get(i, p, ptr) { dv().setBigUint64(ptr, 0n, true); return 0; }, sched_yield() { return 0; }, proc_exit(c) { throw new Error('exit ' + c); } };
+  const imports = {}; for (const im of WebAssembly.Module.imports(module)) { imports[im.module] ??= {}; imports[im.module][im.name] = im.kind === 'memory' ? memory : (wasi[im.name] || (() => 52)); }
+  const x = (await WebAssembly.instantiate(module, imports)).exports; if (!x.init || !x.frame) throw new Error('missing export');
+  x._initialize?.(); x.init(w, h); let ptr = 0; for (const t of times) ptr = x.frame(t) >>> 0;
+  postMessage({ px: new Uint8Array(memory.buffer, ptr, w * h * 4).slice() }); } catch (err) { postMessage({ error: String(err.message || err) }); } };`;
+const runTile = (b, times, w = 64, h = 48) => new Promise((ok) => { const wk = new Worker(URL.createObjectURL(new Blob([RUN], { type: 'text/javascript' }))); const t = setTimeout(() => { wk.terminate(); ok({ error: 'timeout' }); }, 3000);
+  wk.onmessage = (e) => { clearTimeout(t); wk.terminate(); ok(e.data); }; wk.postMessage({ bytes: b.bytes, memory: b.memory, w, h, times }); });
+await kready;
+R.toolchain = tc.tag;
+const TILES = [...TASKS, ...TASKS2].filter((t) => t.kind === 'tile');
+const only = P.get('only')?.split(',');
+const drop = (v, why) => { R.dropped.push({ id: v.id, why }); console.log('DROP', v.id, why); };
+for (const v of variants(+(P.get('per') ?? 14), +(P.get('salt') ?? 1))) {
+  if (only && !only.includes(v.template)) continue;
+  const b = await compile(v.code);
+  if (b.code !== 0) { drop(v, 'does not compile: ' + b.out.slice(0, 500)); continue; }
+  let bad = '';
+  for (const [w, h] of [[64, 48], [80, 40]]) for (const t of v.times) {
+    if (bad) break;
+    const p = await runTile(b, [t], w, h);
+    if (p.error) { bad = `run: ${p.error}`; break; }
+    let off = 0;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const i = (y * w + x) * 4, c = v.ref(x, y, t, w, h);
+      if (p.px[i + 3] !== 255 || Math.abs(p.px[i] - c[0]) > v.tol || Math.abs(p.px[i + 1] - c[1]) > v.tol || Math.abs(p.px[i + 2] - c[2]) > v.tol) off++; }
+    if (off > v.slack) bad = `${off} pixels differ from the reference at ${w}x${h}, t = ${t}`;
+  }
+  if (bad) { drop(v, bad); continue; }
+  const hit = []; for (const t of TILES) { const p = await runTile(b, t.times ?? [0, 16, 33]); if (!p.error && t.check(p.px, 64, 48)) hit.push(t.id); }
+  if (hit.length) { drop(v, 'draws a picture of the measuring set: ' + hit); continue; }
+  R.rows.push({ id: v.id, template: v.template, ask: v.ask, idea: v.idea, code: v.code });
+}
+R.done = true;
+</script>

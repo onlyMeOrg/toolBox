@@ -4,7 +4,7 @@
 // text the model is given (ChatML, ending inside the opened code block, with the tile's head already
 // written); `answer` is what it should continue with. Only seeds that produced pairs are known to be
 // proven, so run gen.mjs first.
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { TILE_HEAD } from '../tasks.mjs';
 import { TILE_NOTE, chatml, repairUser, whyText } from '../prompt.mjs';
 import { SEEDS } from './seeds.mjs';
@@ -27,5 +27,13 @@ for (const pair of pairs) {
 	const [head, rest] = split(seed.kind, pair.fixed);
 	out.push({ id: pair.id, seed: pair.seed, kind: 'repair', stage: pair.stage, autofix: pair.autofix, prompt: chatml(repairUser(ask(seed), pair.broken, whyText(pair.stage, pair.why)), head), answer: rest + END });
 }
+// Variants of the recipe notebook (variants-gen.mjs), when they were generated: write examples whose
+// answer starts with the idea as a comment. `seed` is the template, so the trainer can tell them apart.
+let made = 0;
+if (existsSync(new URL('./out/variants.jsonl', import.meta.url))) for (const line of readFileSync(new URL('./out/variants.jsonl', import.meta.url), 'utf8').trim().split('\n')) {
+	const v = JSON.parse(line);
+	out.push({ id: v.id, seed: `v_${v.template}`, kind: 'write', variant: true, prompt: chatml(v.ask + TILE_NOTE, TILE_HEAD), answer: v.code.slice(TILE_HEAD.length) + END });
+	made++;
+}
 writeFileSync(new URL('./out/examples.jsonl', import.meta.url), out.map((r) => JSON.stringify(r)).join('\n') + '\n');
-console.log(`${out.length} examples (${SEEDS.length - failing.size} write, ${pairs.length} repair)`);
+console.log(`${out.length} examples (${SEEDS.length - failing.size} write, ${pairs.length} repair, ${made} variants of recipes)`);

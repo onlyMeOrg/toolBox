@@ -1,0 +1,68 @@
+{
+	"toolchain": "toolchain-2026-10-19-f529863",
+	"variants": 370,
+	"byTemplate": {
+		"fill": 13,
+		"split": 14,
+		"tick": 14,
+		"disc": 14,
+		"ring": 13,
+		"glow": 14,
+		"lerp": 14,
+		"uv": 14,
+		"cells": 12,
+		"stripes": 14,
+		"slant": 14,
+		"rect": 14,
+		"frame": 14,
+		"side": 14,
+		"plot": 14,
+		"wave": 14,
+		"move": 14,
+		"bounce": 14,
+		"fall": 14,
+		"swing": 12,
+		"wheel": 13,
+		"noise": 14,
+		"mirror": 14,
+		"over": 14,
+		"metric": 14,
+		"layers": 14,
+		"fade": 13
+	},
+	"droppedAsMeasured": [
+		{
+			"id": "v_fill:9",
+			"why": "draws a picture of the measuring set: solid"
+		},
+		{
+			"id": "v_ring:13",
+			"why": "draws a picture of the measuring set: solid"
+		},
+		{
+			"id": "v_cells:10",
+			"why": "draws a picture of the measuring set: checker"
+		},
+		{
+			"id": "v_cells:11",
+			"why": "draws a picture of the measuring set: solid"
+		},
+		{
+			"id": "v_swing:1",
+			"why": "draws a picture of the measuring set: solid"
+		},
+		{
+			"id": "v_swing:3",
+			"why": "draws a picture of the measuring set: solid"
+		},
+		{
+			"id": "v_wheel:13",
+			"why": "draws a picture of the measuring set: solid"
+		},
+		{
+			"id": "v_fade:2",
+			"why": "draws a picture of the measuring set: solid"
+		}
+	],
+	"failed": []
+}
